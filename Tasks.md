@@ -7,3 +7,5 @@
 
 ## Task A
 * A.1: nuturtle_description package
+* A.2: visualization
+* A.4: prefix

@@ -27,21 +27,38 @@ def generate_launch_description():
             default_value='true', 
             description='Launch joint_state_publisher gui or not',
             choices=['true','false']),
+        # setting color to purple
+        DeclareLaunchArgument(
+            name='color',
+            default_value='purple',
+            description='default color for the turtlebot',
+            choices=['purple','red','green','blue','']),
+        # rviz file launch config
+        SetLaunchConfiguration(
+            name='color_file',
+            value=[TextSubstitution(text='basic_'),
+                   LaunchConfiguration('color'),
+                   TextSubstitution(text='.rviz')]),
         # joint_state_publisher executable
         Node(package='joint_state_publisher',
              executable='joint_state_publisher',
-             condition=IfCondition(LaunchConfiguration('use_jsp'))
-             ),
+             condition=IfCondition(LaunchConfiguration('use_jsp')),
+             namespace=LaunchConfiguration('color')),
         # robot_state_publisher executable
         Node(package='robot_state_publisher',
              executable='robot_state_publisher',
              name='robot_state_publisher',
+             namespace=LaunchConfiguration('color'),
              parameters=[{'robot_description':
                           Command([ExecutableInPackage('xacro','xacro'),
                                    TextSubstitution(text=' '),
                                    PathJoinSubstitution([FindPackageShare('nuturtle_description'),
                                                          'urdf',
-                                                         'turtlebot3_burger.urdf.xacro'])])}]),
+                                                         'turtlebot3_burger.urdf.xacro']),
+                                                         TextSubstitution(text= ' color:='),
+                                                         LaunchConfiguration('color')])},
+                                   {'frame_prefix': [LaunchConfiguration('color'),'/']}
+                                                         ]),
         # rviz executable
         Node(
             package='rviz2',
@@ -49,13 +66,13 @@ def generate_launch_description():
             name='rviz2',
             output='screen',
             condition=IfCondition(LaunchConfiguration('use_rviz')),
-            # arguments=['-d', PathJoinSubstitution([FindPackageShare('nuturtle_description'),
-            #                                        'config',
-            #                                        LaunchConfiguration('turtlebot.rviz')]),
-            #             '-f', [LaunchConfiguration('color'),
-            #                    TextSubstitution(text='/base_footprint')]],
-            #                 on_exit=Shutdown(),
-            #                 namespace=LaunchConfiguration('color')
+            arguments=['-d', PathJoinSubstitution([FindPackageShare('nuturtle_description'),
+                                                   'config',
+                                                   LaunchConfiguration('color_file')]),
+                        '-f', [LaunchConfiguration('color'),
+                               TextSubstitution(text='/base_footprint')]],
+            on_exit=Shutdown(),
+            namespace=LaunchConfiguration('color')
         )
         
     ])

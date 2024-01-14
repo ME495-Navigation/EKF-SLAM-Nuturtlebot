@@ -11,3 +11,4 @@
 * A.4: prefix
 * A.3: yaml file
 * A.5: multi robot
+* A.6: README

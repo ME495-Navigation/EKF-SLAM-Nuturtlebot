@@ -9,7 +9,14 @@ namespace turtlelib
     //  implementing functions in order of appearance in .hpp
     // keeping rad in range -pi to pi
     double normalize_angle(double rad){
-        rad = fmod(rad + PI, 2*PI) - PI;
+        while(rad > PI)
+        {
+            rad -= 2*PI;
+        }
+        while(rad <= -PI)
+        {
+            rad += 2*PI;
+        }
         return rad;
     }
 
@@ -28,14 +35,16 @@ namespace turtlelib
     // calculate vector that points from p1 to p2 (p2-p1)
     Vector2D operator-(const Point2D & head, const Point2D & tail){
         Vector2D vec;
-        vec = tail - head;
+        vec.x = tail.x - head.x;
+        vec.y = tail.y - head.y;
         return vec;
     }
 
     // add vector to point to create new point displaced by vector
     Point2D operator+(const Point2D & tail, const Vector2D & disp){
         Point2D dispP;
-        dispP = tail + disp;
+        dispP.x = tail.x + disp.x;
+        dispP.y = tail.y + disp.y;
         return dispP;
     }
 
@@ -50,7 +59,5 @@ namespace turtlelib
         is >> v.x >> v.y;
         return is;
     }
-
-    
 }
 

@@ -11,9 +11,23 @@ project(turtlelib)
 # Then general behavior is to call "find_package" but the options
 # provided are package specific.  Usually there is then a CMAKE variable
 # That is defined to reference the library
-# here: we find the eigen library as per the instruction
-# https://eigen.tuxfamily.org/dox/TopicCMakeGuide.html
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+# here:
+
+# catch2 stuff
+include(CTest)
+
+# CTest sets BUILD_TESTING to on. To disable tests add -DBUILD_TESTING=OFF when invoking cmake
+if(BUILD_TESTING)
+    # Find the Unit testing framework. In this example, Catch2
+    find_package(Catch2 3 REQUIRED)
+
+    # A test is just an executable that is linked against the unit testing library
+    add_executable(turtlelib_test tests/test_geometry2d.cpp)
+    target_link_libraries(turtlelib_test Catch2::Catch2WithMain turtlelib)
+
+    # register the test with CTest, telling it what executable to run
+    add_test(NAME turtlelib_test COMMAND turtlelib_test)
+endif()
 
 # Doxygen Stuff
 find_package(Doxygen)

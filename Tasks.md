@@ -14,4 +14,5 @@
 * A.6: README
 
 ## Task B
-
+* B.1: geometry primitives
+* B.2: unit testing geometry

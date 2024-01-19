@@ -21,7 +21,11 @@ namespace turtlelib
     /// if given a compile-time constant as input
     constexpr bool almost_equal(double d1, double d2, double epsilon=1.0e-12)
     {
-    
+        if (d1 < d2){
+            return (d2-d1) < epsilon;
+        } else{
+            return (d1-d2) < epsilon;
+        }
     }
 
     /// \brief convert degrees to radians
@@ -29,6 +33,7 @@ namespace turtlelib
     /// \returns radians
     constexpr double deg2rad(double deg)
     {
+        return deg * (PI/180.0);
     }
 
     /// \brief convert radians to degrees
@@ -36,12 +41,12 @@ namespace turtlelib
     /// \returns the angle in degrees
     constexpr double rad2deg(double rad)
     {
+        return rad * (180.0/PI);
     }
 
     /// \brief wrap an angle to (-PI, PI]
     /// \param rad (angle in radians)
     /// \return an angle equivalent to rad but in the range (-PI, PI]
-    //  TODO: in cpp
     double normalize_angle(double rad);
 
     /// static_assertions test compile time assumptions.
@@ -69,7 +74,6 @@ namespace turtlelib
     /// \brief output a 2 dimensional point as [xcomponent ycomponent]
     /// \param os - stream to output to
     /// \param p - the point to print
-    //  TODO: in cpp
     std::ostream & operator<<(std::ostream & os, const Point2D & p);
 
     /// \brief input a 2 dimensional point
@@ -78,7 +82,6 @@ namespace turtlelib
     /// \param is - stream from which to read
     /// \param p [out] - output vector
     /// HINT: See operator>> for Vector2D
-    //  TODO: in cpp
     std::istream & operator>>(std::istream & is, Point2D & p);
 
     /// \brief A 2-Dimensional Vector
@@ -96,7 +99,6 @@ namespace turtlelib
     /// \param tail point corresponding to the tail of the vector
     /// \return a vector that points from p1 to p2
     /// NOTE: this is not implemented in terms of -= because subtracting two Point2D yields a Vector2D
-    //  TODO: in cpp
     Vector2D operator-(const Point2D & head, const Point2D & tail);
 
     /// \brief Adding a vector to a point yields a new point displaced by the vector
@@ -104,13 +106,11 @@ namespace turtlelib
     /// \param disp The displacement vector
     /// \return the point reached by displacing by disp from tail
     /// NOTE: this is not implemented in terms of += because of the different types
-    //  TODO: in cpp
     Point2D operator+(const Point2D & tail, const Vector2D & disp);
 
     /// \brief output a 2 dimensional vector as [xcomponent ycomponent]
     /// \param os - stream to output to
     /// \param v - the vector to print
-    //  TODO: in cpp
     std::ostream & operator<<(std::ostream & os, const Vector2D & v);
 
     /// \brief input a 2 dimensional vector
@@ -131,7 +131,6 @@ namespace turtlelib
     /// We have lower level control however. For example:
     /// peek looks at the next unprocessed character in the buffer without removing it
     /// get removes the next unprocessed character from the buffer.
-    //  TODO: cpp
     std::istream & operator>>(std::istream & is, Vector2D & v);
 }
 

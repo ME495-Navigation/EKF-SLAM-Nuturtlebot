@@ -59,5 +59,14 @@ namespace turtlelib
         is >> v.x >> v.y;
         return is;
     }
+
+    // normalize a Vector2D
+    Vector2D normalize(Vector2D v){
+        Vector2D normV;
+        double m = sqrt((v.x*v.x) + (v.y*v.y));
+        normV.x = v.x/m;
+        normV.y = v.y/m;
+        return normV;
+    }
 }
 

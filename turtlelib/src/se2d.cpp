@@ -7,7 +7,7 @@ namespace turtlelib
     //  implementing functions in order of appearance in .hpp
     // returns the ostream with the twist data inserted
     std::ostream & operator<<(std::ostream & os, const Twist2D & tw){
-        os << "[" << tw.omega << " " << " " << tw.x << " " << tw.y << "]";
+        os << "[" << tw.omega << " " << tw.x << " " << tw.y << "]";
         return os;
     }
 
@@ -56,26 +56,36 @@ namespace turtlelib
     // apply transformation to a 2D point
     Point2D Transform2D::operator()(Point2D p) const{
         Point2D newP;
-        newP.x = ((p.x*std::cos(w))-(p.y*std::sin(w)));
-        newP.y = ((p.x*std::sin(w))-(p.y*std::cos(w)));
+        newP.x = ((p.x*std::cos(w))-(p.y*std::sin(w))) + x;
+        newP.y = ((p.x*std::sin(w))+(p.y*std::cos(w))) + y;
+        return newP;
     }
 
     // apply transformation to 2D vector
     Vector2D Transform2D::operator()(Vector2D v) const{
         Vector2D newV;
-        newV.x = (v.x*std::cos(w)) - (v.y*std::sin(w)) + x;
-        newV.y = (v.x*std::sin(w)) - (v.y*std::cos(w)) + y;
+        newV.x = (v.x*std::cos(w)) - (v.y*std::sin(w));
+        newV.y = (v.x*std::sin(w)) + (v.y*std::cos(w));
+        return newV;
     }
 
     // apply transformation to 2D Twist
+    // TODO: change a bit
     Twist2D Transform2D::operator()(Twist2D v) const{
-        Twist2D newV2;
-        newV2.x = v.x;
-        newV2.y = v.y + (y*v.omega);
-        newV2.omega = (-x*v.y) + (std::cos(w)*v.omega) + (x*v.x);
-        return newV2;
-
+        Twist2D tw;
+        tw.omega = v.omega;
+        tw.x = (v.x*cos(w))-(v.y*sin(w))+(v.omega*y);
+        tw.y = (v.x*sin(w))+(v.y*cos(w))-(v.omega*x);
+        return Twist2D{tw.omega,tw.x,tw.y};
     }
+    // Twist2D Transform2D::operator()(Twist2D v) const{
+    //     Twist2D newV2;
+    //     newV2.x = v.x;
+    //     newV2.y = v.y + (y*v.omega);
+    //     newV2.omega = (-x*v.y) + (std::cos(w)*v.omega) + (x*v.x);
+    //     return newV2;
+
+    // }
     
     // invert the transformation
     Transform2D Transform2D::inv() const{
@@ -116,15 +126,17 @@ namespace turtlelib
 
     // print out transform like deg:_, x:_, y:_
     std::ostream & operator<<(std::ostream & os, const Transform2D & tf){
-        os << "deg: " << tf.w << " x: " << tf.x << " y: " << tf.y;
+        double deg = rad2deg(tf.w);
+        os << "deg: " << deg << " x: " << tf.x << " y: " << tf.y;
         return os;
     }
 
     // read a transform from stdin
     std::istream & operator>>(std::istream & is, Transform2D & tf){
-        Vector2D t = tf.translation();
-        double w = tf.rotation();
-        is >> w >> t.x >> t.y;
+        // define new variables
+        double deg, x, y;
+        is >> deg >> x >> y;
+        tf = Transform2D{Vector2D{x,y}, deg2rad(deg)};
         return is;
     }
 

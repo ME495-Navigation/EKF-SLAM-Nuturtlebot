@@ -16,3 +16,7 @@
 ## Task B
 * B.1: geometry primitives
 * B.2: unit testing geometry
+* B.3: SE(2) geometry
+* B.4: unit testing SE(2)
+* B.5: visualization
+

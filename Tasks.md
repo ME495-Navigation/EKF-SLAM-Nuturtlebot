@@ -20,3 +20,7 @@
 * B.4: unit testing SE(2)
 * B.5: visualization
 
+## Task C
+* C.1: nusim package
+* C.2: simulation node
+

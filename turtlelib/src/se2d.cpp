@@ -13,10 +13,11 @@ namespace turtlelib
 
     // returns the istream with the twist characters removed
     std::istream & operator>>(std::istream & is, Twist2D & tw){
-        char b;
-        if(is >> b && b == '[')
+        char b = is.peek();
+        if(b == '[')
         {
-            is >> tw.omega >> tw.x >> tw.y >> b;
+            is.get();
+            is >> tw.omega >> tw.x >> tw.y;
         }
         else
         {

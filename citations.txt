@@ -1,0 +1,9 @@
+Worked With: [Carter DiOrio, Max Palay, Zachary Alves, Kyle Wang, Ananya Agarwal, Stella Yu]
+
+Following unit tests were made by Kyle Wang: Multiply operator *, Obtain transform components, Inverting a transform, Transforming a twist, Initializing transform.
+
+Following unit tests were made by Max Palay: Twist2D>>, Transform2D(point), Transform2D(vector), Transform2D*
+
+Used cppreference.com for C++ documentation and information for README questions.
+
+-- also used ros official documentation and Matt's Notes --

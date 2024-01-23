@@ -27,10 +27,11 @@ namespace turtlelib{
         void dVec(Point2D head, Point2D tail, const std::string& color);
 
         // Draw coordinate frame
-        void dCoordFrame(Point2D xl, Point2D yl, Point2D c, const std::string& color);
+        void dCoordFrame(Point2D origin, Point2D x, Point2D y, Point2D tloc, std::string name);
 
         // Ouput svgSave
         std::stringstream & footer();
+
 
     private:
         // save svg info into string
@@ -39,7 +40,7 @@ namespace turtlelib{
         // Header of svg file
         std::string header = "<svg width=\"8.500000in\" height=\"11.000000in\" viewBox=\"0 0 816.000000 1056.000000\" xmlns=\"http://www.w3.org/2000/svg\">\n"
                              "<defs>\n"
-                              "<marker>\n"
+                              "<marker\n"
                                 "style=\"overflow:visible\"\n"
                                 "id=\"Arrow1Sstart\"\n"
                                 "refX=\"0.0\"\n"

@@ -36,6 +36,24 @@
         std::cout << "T_{c,a} = " << Tca << std::endl;
 
         // draw each frame in svg file format with frame {a} at (0,0)
+        // frame A
+        turtlelib::Point2D origina = {0.0,0.0};
+        turtlelib::Point2D xa = {1.0,0.0};
+        turtlelib::Point2D ya = {0.0,1.0};
+        file.dCoordFrame(origina,xa,ya,{xa.x+0.2,xa.y+0.2},"A");
+        //frame B
+        turtlelib::Point2D originb = Tab(origina);
+        turtlelib::Point2D xb = Tab(xa);
+        turtlelib::Point2D yb = Tab(ya);
+        file.dCoordFrame(originb,xb,yb,{xb.x+0.2,xb.y+0.2},"B");
+        //frame C
+        turtlelib::Point2D originc = Tac(origina);
+        turtlelib::Point2D xc = Tac(xa);
+        turtlelib::Point2D yc = Tac(ya);
+        file.dCoordFrame(originc,xc,yc,{xc.x+0.2,xc.y+0.2},"C");
+
+
+
 
 
         // prompt the user to enter a point p_a in Frame {a}
@@ -67,6 +85,11 @@
         std::cout << "v_b: " << vb << std::endl;
         turtlelib::Vector2D vc = Tcb(vb);
         std::cout << "v_c: " << vc << std::endl;
+
+        // draw vbhat, va, vc
+        file.dVec({v_bhat.x+originb.x,v_bhat.y+originb.y},originb,"brown");
+        file.dVec({va.x,va.y},{0.0,0.0},"purple");
+        file.dVec({vc.x+originc.x,vc.y+originc.y},originc,"orange");
 
         // prompt the user to enter in a twist V_b
         std::cout << "Enter twist V_b:" << std::endl;

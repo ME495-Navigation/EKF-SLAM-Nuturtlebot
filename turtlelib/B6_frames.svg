@@ -1,0 +1,30 @@
+<svg width="8.500000in" height="11.000000in" viewBox="0 0 816.000000 1056.000000" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+    <marker
+    style="overflow:visible"
+    id="Arrow1Sstart"
+    refX="0.0"
+    refY="0.0"
+    orient="auto">
+    <path
+    transform="scale(0.2) translate(6,0)"
+    style="fill-rule:evenodd;fill:context-stroke;stroke:context-stroke;stroke-width:1.0pt"
+    d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+    />
+    </marker>
+    </defs><line x1="504" y1="528" x2="408" y2="528" stroke="red" stroke-width="2"  marker-start="url(#Arrow1Sstart)" />
+    <line x1="408" y1="432" x2="408" y2="528" stroke="green" stroke-width="2"  marker-start="url(#Arrow1Sstart)" />
+    <text x="523.2" y="508.8">{A} </text>
+    <line x1="475.882" y1="364.118" x2="408" y2="432" stroke="red" stroke-width="2"  marker-start="url(#Arrow1Sstart)" />
+    <line x1="340.118" y1="364.118" x2="408" y2="432" stroke="green" stroke-width="2"  marker-start="url(#Arrow1Sstart)" />
+    <text x="495.082" y="344.918">{B} </text>
+    <line x1="475.882" y1="268.118" x2="475.882" y2="364.118" stroke="red" stroke-width="2"  marker-start="url(#Arrow1Sstart)" />
+    <line x1="379.882" y1="364.118" x2="475.882" y2="364.118" stroke="green" stroke-width="2"  marker-start="url(#Arrow1Sstart)" />
+    <text x="495.082" y="248.918">{C} </text>
+    <circle cx="504" cy="432" r="2" fill="purple"/>
+    <circle cx="475.882" cy="595.882" r="2" fill="brown"/>
+    <circle cx="340.118" cy="556.118" r="2" fill="orange"/>
+    <line x1="475.882" y1="364.118" x2="408" y2="432" stroke="brown" stroke-width="2"  marker-start="url(#Arrow1Sstart)" />
+    <line x1="408" y1="392.235" x2="408" y2="528" stroke="purple" stroke-width="2"  marker-start="url(#Arrow1Sstart)" />
+    <line x1="611.647" y1="364.118" x2="475.882" y2="364.118" stroke="orange" stroke-width="2"  marker-start="url(#Arrow1Sstart)" />
+    </svg>

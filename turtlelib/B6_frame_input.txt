@@ -1,0 +1,10 @@
+Enter transform T_{a,b}:
+45 0 1
+Enter transform T_{b,c}:
+45 1 0
+Enter point p_a:
+1 1
+Enter vector v_b:
+1 1
+Enter twist V_b:
+1 1 1

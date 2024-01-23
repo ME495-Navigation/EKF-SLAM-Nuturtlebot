@@ -15,6 +15,16 @@ find_package(builtin_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}_srv
+  "srv/Teleport.srv" LIBRARY_NAME ${PROJECT_NAME}
+  DEPENDENCIES std_msgs geometry_msgs)
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}_srv "rosidl_typesupport_cpp")
 
 add_executable(nusim src/nusim.cpp)
 ament_target_dependencies(
@@ -23,12 +33,24 @@ ament_target_dependencies(
   std_msgs
   std_srvs
   builtin_interfaces
+  geometry_msgs
+  tf2_ros
+  tf2
+  visualization_msgs
 )
+
+target_link_libraries(nusim "${cpp_typesupport_target}")
 
 install(TARGETS nusim DESTINATION lib/${PROJECT_NAME})
 
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+
+  install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
   # the following line skips the linter which checks for copyrights
   # comment the line when a copyright and license is added to all source files
   set(ament_cmake_copyright_FOUND TRUE)

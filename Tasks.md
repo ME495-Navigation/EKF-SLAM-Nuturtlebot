@@ -20,6 +20,7 @@
 * B.4: unit testing SE(2)
 * B.5: visualization
 * B.6: executable implementation
+* B.7: README.md
 
 ## Task C
 * C.1: nusim package
@@ -28,3 +29,4 @@
 * C.4: walls
 * C.5: cylindrical obstacles
 * C.6: nusim launch
+* C.7: README.md

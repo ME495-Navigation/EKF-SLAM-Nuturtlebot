@@ -4,5 +4,7 @@
 
 # Package List
 This repository consists of several ROS packages
-- nuturtle_description - <one sentence description>
+- nuturtle_description - provides URDF files for Nuturtle robots (mimicked after turtlebots)
+- turtlelib - calculates 2D rigid body transformations.
+- nusim - provides a simulated turtlebot environment with obstacles and an arena.
 

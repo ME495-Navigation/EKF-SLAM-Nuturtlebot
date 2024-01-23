@@ -1,16 +1,59 @@
 #include "turtlelib/se2d.hpp"
-
-#include <catch2/catch_test_macros.hpp> // Test Cases
-#include <catch2/matchers/catch_matchers_floating_point.hpp> // Floating point matchers
-#include <sstream> // for testing stream insertion/extraction
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <sstream>
 
 using namespace turtlelib;
 
-    TEST_CASE("Twist2D<<", "[se2d]") { // Max Palay
-        Twist2D twist = {0, -0.203, 0.145};
-        std::stringstream ss{""}; 
-        ss << twist;
-        REQUIRE(ss.str() == "[0 -0.203 0.145]");
+    TEST_CASE("Input Twist2D check","[Twist2D]") // Ishani Narwankar
+    {
+        // checking for stringstream twist input 
+        std::stringstream check{""};
+        Twist2D t = {1.5, 3.05, 4.87};
+        check << t;
+
+        // set requirement
+        REQUIRE(check.str() == "[1.5, 3.05, 4.87]");
+    }
+
+    TEST_CASE("Input Transform2D check","[Transform2D]") // Ishani Narwankar
+    {
+        // checking for stringstream transform input
+        std::stringstream check{""};
+        Transform2D t = {Vector2D{1.5, 3.05}, deg2rad(90)};
+        check << t;
+
+        // set requirement
+        REQUIRE(check.str() == "deg: 1.57 x: 1.5 y: 3.05");
+    }
+
+    TEST_CASE("Output Twist2D check", "[Twist2D]") // Ishani Narwankar
+    {
+        // checking for stringstream twist output
+        std::stringstream check;
+        Twist2D t = {1.5, 3.05, 1.57};
+
+        check.str ("[90 1.5 3.05]");
+        check >> t;
+
+        // set requirement
+        REQUIRE(t.omega == deg2rad(90));
+        REQUIRE(t.x == 1.5);
+        REQUIRE(t.y == 3.05);
+    }
+
+    TEST_CASE("Output Transform2D check", "[Transform2D]")
+    {
+        // checking for stringstream transfrom output
+        std::stringstream check;
+        Transform2D t;
+        check << "90 1.5 3.05";
+        check >> t;
+
+        // set requirement
+        REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinRel(deg2rad(90)));
+        REQUIRE_THAT(t.translation().x, Catch::Matchers::WithinRel(1.5));
+        REQUIRE_THAT(t.translation().y, Catch::Matchers::WithinRel(3.05));
     }
 
     TEST_CASE("Twist2D>>", "[se2d]") { // Max Palay
@@ -28,7 +71,7 @@ using namespace turtlelib;
         REQUIRE_THAT(twist.y, Catch::Matchers::WithinAbs(-0.2, 1.0E-8));
     }
 
-    TEST_CASE("Initializing transform", "[Transform2D]") {
+    TEST_CASE("Initializing transform", "[Transform2D]") { // Kyle Wang
         Transform2D tf1{0.32}; // can't use tf1 = {...} because explicit, can't use copy-list-initialization
         Transform2D tf2{Vector2D{3.1, -1.3}};
         Transform2D tf3 = {Vector2D{3.1, -1.3}, 0.32};
@@ -119,7 +162,7 @@ using namespace turtlelib;
         REQUIRE_THAT(res.y, Catch::Matchers::WithinAbs(0.0179, 1.0E-4));
     }
 
-    TEST_CASE("Transforming a twist", "[se2d]") {
+    TEST_CASE("Transforming a twist", "[se2d]") { // Kyle Wang
         Transform2D tf = {Vector2D{0.2, 1.1}, 0.34};
         Twist2D tw = {1.0, 0.707, 0.707};
         Twist2D ans = tf(tw);
@@ -128,7 +171,7 @@ using namespace turtlelib;
         REQUIRE_THAT(ans.y, Catch::Matchers::WithinRel(0.702, 0.001));
     }
 
-    TEST_CASE("Inverting a transform", "[transform2D]") {
+    TEST_CASE("Inverting a transform", "[transform2D]") { // Kyle Wang
         Transform2D tf = {Vector2D{-1.2, 0.35}, 0.29};
         Transform2D tfInv = tf.inv();
         REQUIRE_THAT(tfInv.rotation(), Catch::Matchers::WithinRel(-0.29));
@@ -158,49 +201,14 @@ using namespace turtlelib;
         REQUIRE_THAT(tf1.translation().y, Catch::Matchers::WithinAbs(1.353, 1.0E-3));
     }
 
-    TEST_CASE("Obtain transform components", "[Transform2D]"){
+    TEST_CASE("Obtain transform components", "[Transform2D]"){ // Kyle Wang
         Transform2D tf = {Vector2D{2.1, -4.3}, 2.3};
         REQUIRE_THAT(tf.rotation(), Catch::Matchers::WithinRel(2.3));
         REQUIRE_THAT(tf.translation().x, Catch::Matchers::WithinRel(2.1));
         REQUIRE_THAT(tf.translation().y, Catch::Matchers::WithinRel(-4.3));
     }
 
-    TEST_CASE("Stream insertion operator <<", "[transform2D]"){
-        Transform2D tf = {Vector2D{1.4, -2.7}, deg2rad(-52)};
-        std::stringstream strStream; 
-        strStream << tf;
-        REQUIRE(strStream.str() == "deg: -52 x: 1.4 y: -2.7");
-    }
-
-    TEST_CASE("Stream extraction operator >>", "[transform2D]"){
-        std::stringstream strStream1; 
-        std::stringstream strStream2;
-        std::stringstream strStream3;
-        Transform2D tf;
-
-        // Testing seperated by space
-        strStream1 << "49 -0.2 -4.1";
-        strStream1 >> tf;
-        REQUIRE_THAT(tf.translation().x, Catch::Matchers::WithinRel(-0.2));
-        REQUIRE_THAT(tf.translation().y, Catch::Matchers::WithinRel(-4.1));
-        REQUIRE_THAT(tf.rotation(), Catch::Matchers::WithinRel(deg2rad(49)));
-
-        // Testing seperated by newline
-        tf = Transform2D();
-        strStream2 << "49\n-0.2\n-4.1\n";
-        strStream2 >> tf;
-        REQUIRE_THAT(tf.translation().x, Catch::Matchers::WithinRel(-0.2));
-        REQUIRE_THAT(tf.translation().y, Catch::Matchers::WithinRel(-4.1));
-        REQUIRE_THAT(tf.rotation(), Catch::Matchers::WithinRel(deg2rad(49)));
-
-        strStream3 << "deg: 49 x: -0.2 y: -4.1";
-        strStream3 >> tf;
-        // REQUIRE_THAT(tf.translation().x, Catch::Matchers::WithinRel(-0.2));
-        // REQUIRE_THAT(tf.translation().y, Catch::Matchers::WithinRel(-4.1));
-        // REQUIRE_THAT(tf.rotation(), Catch::Matchers::WithinRel(deg2rad(49)));
-    }
-
-    TEST_CASE("Multiply operator *", "[transform2D]"){
+    TEST_CASE("Multiply operator *", "[transform2D]"){ // Kyle Wang
         Transform2D tf1 = {Vector2D{1.2, -2.2}, 0.6};
         Transform2D tf2 = {Vector2D{0.3, 4.1}, -0.1};
         Transform2D tf3 = tf1 * tf2;

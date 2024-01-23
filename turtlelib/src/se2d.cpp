@@ -71,7 +71,6 @@ namespace turtlelib
     }
 
     // apply transformation to 2D Twist
-    // TODO: change a bit
     Twist2D Transform2D::operator()(Twist2D v) const{
         Twist2D tw;
         tw.omega = v.omega;
@@ -79,14 +78,6 @@ namespace turtlelib
         tw.y = (v.x*sin(w))+(v.y*cos(w))-(v.omega*x);
         return Twist2D{tw.omega,tw.x,tw.y};
     }
-    // Twist2D Transform2D::operator()(Twist2D v) const{
-    //     Twist2D newV2;
-    //     newV2.x = v.x;
-    //     newV2.y = v.y + (y*v.omega);
-    //     newV2.omega = (-x*v.y) + (std::cos(w)*v.omega) + (x*v.x);
-    //     return newV2;
-
-    // }
     
     // invert the transformation
     Transform2D Transform2D::inv() const{

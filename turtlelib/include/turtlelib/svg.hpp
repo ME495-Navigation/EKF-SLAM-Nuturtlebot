@@ -1,3 +1,4 @@
+
 #ifndef TURTLELIB_SVG_HPP_INCLUDE_GUARD
 #define TURTLELIB_SVG_HPP_INCLUDE_GUARD
 /// \file
@@ -9,7 +10,7 @@
 #include<string>
 
 namespace turtlelib{
-
+    /// \brief Draws points, vectors, and coordinate frames and saves to .svg
     class Svg
     {
     public:
@@ -19,25 +20,34 @@ namespace turtlelib{
             svgSave << header;
         }
 
-
-        // Draw point
+        ///\brief draw point
+        ///\param a Point2D in format [x,y]
+        ///\param color string input for color choice
         void dPoint(Point2D a, const std::string& color);
 
-        // Draw vector
+        ///\brief draw vector
+        ///\param head-Point2D in for head of vector
+        ///\param tail-Point2D for tail of vector
+        ///\param color string input for color choice
         void dVec(Point2D head, Point2D tail, const std::string& color);
 
-        // Draw coordinate frame
+        ///\brief draw coordinate frame
+        ///\param origin Point2D for origin of coordinate frame
+        ///\param x Point2D for x axis
+        ///\param y Point2D for y axis
+        ///\param tloc Point2D for location of frame label
+        ///\param name string for frame label
         void dCoordFrame(Point2D origin, Point2D x, Point2D y, Point2D tloc, std::string name);
 
-        // Ouput svgSave
+        /// \brief output footer and save svg to file 
         std::stringstream & footer();
 
 
     private:
-        // save svg info into string
+        ///\brief save svg to stringstream
         std::stringstream svgSave;
 
-        // Header of svg file
+        ///\brief include constant info for svg header
         std::string header = "<svg width=\"8.500000in\" height=\"11.000000in\" viewBox=\"0 0 816.000000 1056.000000\" xmlns=\"http://www.w3.org/2000/svg\">\n"
                              "<defs>\n"
                               "<marker\n"

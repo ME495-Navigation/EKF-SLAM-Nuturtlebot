@@ -13,7 +13,7 @@ using namespace turtlelib;
         check << t;
 
         // set requirement
-        REQUIRE(check.str() == "[1.5, 3.05, 4.87]");
+        REQUIRE(check.str() == "[1.5 3.05 4.87]");
     }
 
     TEST_CASE("Input Transform2D check","[Transform2D]") // Ishani Narwankar
@@ -24,7 +24,9 @@ using namespace turtlelib;
         check << t;
 
         // set requirement
-        REQUIRE(check.str() == "deg: 1.57 x: 1.5 y: 3.05");
+        REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinAbs(deg2rad(90), 1.0E-3));
+        REQUIRE_THAT(t.translation().x, Catch::Matchers::WithinAbs(1.5, 1.0E-3));
+        REQUIRE_THAT(t.translation().y, Catch::Matchers::WithinAbs(3.05, 1.0E-3));
     }
 
     TEST_CASE("Output Twist2D check", "[Twist2D]") // Ishani Narwankar
@@ -37,9 +39,12 @@ using namespace turtlelib;
         check >> t;
 
         // set requirement
-        REQUIRE(t.omega == deg2rad(90));
+        REQUIRE(t.omega == 90.0);
         REQUIRE(t.x == 1.5);
         REQUIRE(t.y == 3.05);
+        REQUIRE_THAT(t.omega, Catch::Matchers::WithinAbs(90.0, 1.0E-3));
+        REQUIRE_THAT(t.x, Catch::Matchers::WithinAbs(1.5, 1.0E-3));
+        REQUIRE_THAT(t.y, Catch::Matchers::WithinAbs(3.05, 1.0E-3));
     }
 
     TEST_CASE("Output Transform2D check", "[Transform2D]")

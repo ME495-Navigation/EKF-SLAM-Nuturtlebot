@@ -68,5 +68,65 @@ namespace turtlelib
         normV.y = v.y/m;
         return normV;
     }
+
+    // add two separate vectors together
+    Vector2D operator+(const Vector2D v1, const Vector2D v2){
+        Vector2D v3 = v1 + v2;
+        return v3;
+    }
+
+    // subtract two separate vectors together
+    Vector2D operator-(const Vector2D v1, const Vector2D v2){
+        Vector2D v3 = v2 - v1;
+        return v3;
+    }
+
+    // multiplying two vectors together
+    Vector2D operator*(const Vector2D v1, const Vector2D v2){
+        Vector2D v3 = v1*v2;
+        return v3;
+    }
+
+    // dot product of vectors
+    double dot(const Vector2D v1, const Vector2D v2){
+        double x1 = v1.x;
+        double y1 = v1.y;
+        double x2 = v2.x;
+        double y2 = v2.y;
+
+        double dot = x1*x2 + y1*y2;
+        return dot;
+    }
+
+    // magnitude of a vector
+    double magnitude(const Vector2D v){
+        double x = v.x;
+        double y = v.y;
+        double x_s = pow(x,2);
+        double y_s = pow(y,2);
+        double m = sqrt(x_s + y_s);
+
+        return m;
+    }
+
+    // angle betweeen two vectors
+    double angle(const Vector2D v1, const Vector2D v2){
+        double x1 = v1.x;
+        double y1 = v1.y;
+        double x2 = v2.x;
+        double y2 = v2.y;
+        double x1_s = pow(x1,2);
+        double y1_s = pow(y1,2);
+        double x2_s = pow(x2,2);
+        double y2_s = pow(y2,2);
+        
+        double ang = acos((x1*x2 + y1*y2)/(sqrt(x1_s+y1_s)+sqrt(x2_s+y2_s)));
+
+        return ang;
+    }
+
+    
+
+
 }
 

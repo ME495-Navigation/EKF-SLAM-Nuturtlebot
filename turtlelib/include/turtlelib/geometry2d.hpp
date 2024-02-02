@@ -92,6 +92,21 @@ namespace turtlelib
 
         /// \brief the y coordinate
         double y = 0.0;
+
+        //TODO: add to .cpp
+        /// \brief adding the same vector to itself
+        /// \return the new vector
+        Vector2D operator+=(const Vector2D v1);
+
+        //TODO: add to .cpp
+        /// \brief subtracting the same vector to itself
+        /// \return the new vector
+        Vector2D operator-=(const Vector2D v1);
+
+        //TODO: add to .cpp
+        /// \brief multiplying the same vector to itself
+        /// \return the new vector
+        Vector2D operator*=(const Vector2D v1);
     };
 
     /// \brief Subtracting one point from another yields a vector
@@ -137,6 +152,31 @@ namespace turtlelib
     /// \param v Vector2D to be normalized
     /// \return a Vector2D that is a normalized version of v
     Vector2D normalize(Vector2D v);
+
+    /// \brief adding two separate vectors together
+    /// \return the sum of two Vector2Ds
+    Vector2D operator+(const Vector2D v1, const Vector2D v2);
+
+    /// \brief subtracting two separate vectors from eachother
+    /// \return the sum of two Vector2Ds
+    Vector2D operator-(const Vector2D v1, const Vector2D v2);
+
+    /// \brief multiplying two separate vectors from eachother
+    /// \return the sum of two Vector2Ds
+    Vector2D operator*(const Vector2D v1, const Vector2D v2);
+
+    /// \brief dot product of vectors
+    /// \return the dot product of two Vector2Ds
+    double dot(const Vector2D v1, const Vector2D v2);
+
+    /// \brief calculate the magnitude of a vector
+    /// \return magnitude (as a double) of a Vector2D
+    double magnitude(const Vector2D v);
+
+    /// \brief calculating the angle between two vectors
+    /// \return the angle between two Vector2Ds
+    double angle(const Vector2D v1, const Vector2D v2);
+
 }
 
 #endif

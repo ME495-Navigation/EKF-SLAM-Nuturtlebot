@@ -93,20 +93,17 @@ namespace turtlelib
         /// \brief the y coordinate
         double y = 0.0;
 
-        //TODO: add to .cpp
         /// \brief adding the same vector to itself
         /// \return the new vector
         Vector2D operator+=(const Vector2D v1);
 
-        //TODO: add to .cpp
         /// \brief subtracting the same vector to itself
         /// \return the new vector
         Vector2D operator-=(const Vector2D v1);
 
-        //TODO: add to .cpp
         /// \brief multiplying the same vector to itself
         /// \return the new vector
-        Vector2D operator*=(const Vector2D v1);
+        Vector2D operator*=(const double s);
     };
 
     /// \brief Subtracting one point from another yields a vector
@@ -163,7 +160,7 @@ namespace turtlelib
 
     /// \brief multiplying two separate vectors from eachother
     /// \return the sum of two Vector2Ds
-    Vector2D operator*(const Vector2D v1, const Vector2D v2);
+    Vector2D operator*(const Vector2D v1, const double & s);
 
     /// \brief dot product of vectors
     /// \return the dot product of two Vector2Ds

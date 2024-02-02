@@ -77,13 +77,13 @@ namespace turtlelib
 
     // subtract two separate vectors together
     Vector2D operator-(const Vector2D v1, const Vector2D v2){
-        Vector2D v3 = v2 - v1;
+        Vector2D v3 = v1 - v2;
         return v3;
     }
 
     // multiplying two vectors together
-    Vector2D operator*(const Vector2D v1, const Vector2D v2){
-        Vector2D v3 = v1*v2;
+    Vector2D operator*(const Vector2D v1, const double & s){
+        Vector2D v3 = v1*s;
         return v3;
     }
 
@@ -115,17 +115,35 @@ namespace turtlelib
         double y1 = v1.y;
         double x2 = v2.x;
         double y2 = v2.y;
-        double x1_s = pow(x1,2);
-        double y1_s = pow(y1,2);
-        double x2_s = pow(x2,2);
-        double y2_s = pow(y2,2);
         
-        double ang = acos((x1*x2 + y1*y2)/(sqrt(x1_s+y1_s)+sqrt(x2_s+y2_s)));
+        double ang = atan2(y1,x1) - atan2(y2,x2);
 
         return ang;
     }
-
     
+    // adding the same vector to itself
+    Vector2D Vector2D::operator+=(const Vector2D v1){
+        x += v1.x;
+        y += v1.y;
+
+        return *this;
+    }
+
+    // subtracting the same vector from itself
+    Vector2D Vector2D::operator-=(const Vector2D v1){
+        x -= v1.x;
+        y -= v1.y;
+
+        return *this;
+    }
+
+    // multiplying the same vector to itself
+    Vector2D Vector2D::operator*=(const double s){
+        x *= s;
+        y *= s;
+
+        return *this;
+    }
 
 
 }

@@ -95,15 +95,15 @@ namespace turtlelib
 
         /// \brief adding the same vector to itself
         /// \return the new vector
-        Vector2D operator+=(const Vector2D v1);
+        Vector2D & operator+=(const Vector2D v1);
 
         /// \brief subtracting the same vector to itself
         /// \return the new vector
-        Vector2D operator-=(const Vector2D v1);
+        Vector2D & operator-=(const Vector2D v1);
 
         /// \brief multiplying the same vector to itself
         /// \return the new vector
-        Vector2D operator*=(const double s);
+        Vector2D & operator*=(const double s);
     };
 
     /// \brief Subtracting one point from another yields a vector
@@ -152,27 +152,27 @@ namespace turtlelib
 
     /// \brief adding two separate vectors together
     /// \return the sum of two Vector2Ds
-    Vector2D operator+(const Vector2D v1, const Vector2D v2);
+    Vector2D operator+(Vector2D v1, const Vector2D & v2);
 
     /// \brief subtracting two separate vectors from eachother
     /// \return the sum of two Vector2Ds
-    Vector2D operator-(const Vector2D v1, const Vector2D v2);
+    Vector2D operator-(Vector2D v1, const Vector2D & v2);
 
     /// \brief multiplying two separate vectors from eachother
     /// \return the sum of two Vector2Ds
-    Vector2D operator*(const Vector2D v1, const double & s);
+    Vector2D operator*(Vector2D v1, const double & s);
 
     /// \brief dot product of vectors
     /// \return the dot product of two Vector2Ds
-    double dot(const Vector2D v1, const Vector2D v2);
+    double dot(Vector2D v1, Vector2D v2);
 
     /// \brief calculate the magnitude of a vector
     /// \return magnitude (as a double) of a Vector2D
-    double magnitude(const Vector2D v);
+    double magnitude(Vector2D v);
 
     /// \brief calculating the angle between two vectors
     /// \return the angle between two Vector2Ds
-    double angle(const Vector2D v1, const Vector2D v2);
+    double angle(Vector2D v1, Vector2D v2);
 
 }
 

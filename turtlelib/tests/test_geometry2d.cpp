@@ -111,7 +111,7 @@ TEST_CASE("magnitude", "[Vector2D]")
     Vector2D v3 = Vector2D{3, 4};
 
     REQUIRE_THAT(magnitude(v1), Catch::Matchers::WithinAbs(2.236, tol));
-    REQUIRE_THAT(magnitude(v2), Catch::Matchers::WithinAbs(3.606, tol));
+    REQUIRE_THAT(magnitude(v2), Catch::Matchers::WithinAbs(3.6055, tol));
     REQUIRE_THAT(magnitude(v3), Catch::Matchers::WithinAbs(5.0, tol));
 }
 
@@ -129,7 +129,7 @@ TEST_CASE("angle", "[Vector2D]")
 TEST_CASE("operator+=","[Vector2D]")
 {
     Vector2D v1 = Vector2D{1,2};
-    Vector2D v2;
+    Vector2D v2 = v1 + v1;
 
     REQUIRE_THAT(v2.x, Catch::Matchers::WithinAbs(2.0, tol));
     REQUIRE_THAT(v2.y, Catch::Matchers::WithinAbs(4.0, tol));
@@ -138,8 +138,17 @@ TEST_CASE("operator+=","[Vector2D]")
 TEST_CASE("operator-=","[Vector2D]")
 {
     Vector2D v1 = Vector2D{9,2};
-    Vector2D v2;
+    Vector2D v2 = v1 - v1;
 
-    REQUIRE_THAT(v2.x, Catch::Matchers::WithinAbs(2.0, tol));
-    REQUIRE_THAT(v2.y, Catch::Matchers::WithinAbs(4.0, tol));
+    REQUIRE_THAT(v2.x, Catch::Matchers::WithinAbs(0, tol));
+    REQUIRE_THAT(v2.y, Catch::Matchers::WithinAbs(0, tol));
 }
+
+// TEST_CASE("operator*=","[Vector2D]")
+// {
+//     Vector2D v1 = Vector2D{9,2};
+//     Vector2D v2;
+
+//     REQUIRE_THAT(v2.x, Catch::Matchers::WithinAbs(2.0, tol));
+//     REQUIRE_THAT(v2.y, Catch::Matchers::WithinAbs(4.0, tol));
+// }

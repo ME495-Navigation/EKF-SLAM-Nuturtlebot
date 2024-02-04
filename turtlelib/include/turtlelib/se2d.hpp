@@ -100,11 +100,6 @@ namespace turtlelib
         /// for a description
         friend std::ostream & operator<<(std::ostream & os, const Transform2D & tf);
 
-        //TODO: 
-        /// \brief computes the transformation corresponding to a rigid body following a constant twist
-        /// \returns scaled twist
-        Transform2D integrate_twist(Twist2D t);
-
     };
 
 
@@ -126,6 +121,11 @@ namespace turtlelib
     /// \return the composition of the two transforms
     /// HINT: This function should be implemented in terms of *=
     Transform2D operator*(Transform2D lhs, const Transform2D & rhs);
+
+    //TODO: 
+    /// \brief computes the transformation corresponding to a rigid body following a constant twist
+    /// \returns scaled twist
+    Transform2D integrate_twist(Twist2D t);
 
 
 }

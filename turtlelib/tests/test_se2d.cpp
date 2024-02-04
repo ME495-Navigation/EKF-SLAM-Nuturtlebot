@@ -213,11 +213,56 @@ using namespace turtlelib;
         REQUIRE_THAT(tf.translation().y, Catch::Matchers::WithinRel(-4.3));
     }
 
-    TEST_CASE("Multiply operator *", "[transform2D]"){ // Kyle Wang
+    TEST_CASE("Multiply operator *", "[Transform2D]"){ // Kyle Wang
         Transform2D tf1 = {Vector2D{1.2, -2.2}, 0.6};
         Transform2D tf2 = {Vector2D{0.3, 4.1}, -0.1};
         Transform2D tf3 = tf1 * tf2;
         REQUIRE_THAT(tf3.rotation(), Catch::Matchers::WithinRel(0.5));
         REQUIRE_THAT(tf3.translation().x, Catch::Matchers::WithinRel(-0.867, 0.001));
         REQUIRE_THAT(tf3.translation().y, Catch::Matchers::WithinRel(1.353, 0.001));
+    }
+
+    TEST_CASE("integrate_twist", "[Twist2D/Transform2D]"){ // Ishani Narwankar
+        // define test twists for each case
+        Twist2D tw1;
+        Twist2D tw2;
+        Twist2D tw3;
+
+        // pure translation
+        tw1.x = 1;
+        tw1.y = 0;
+        tw1.omega = 0;
+
+        // pure rotation
+        tw2.x = 0;
+        tw2.y = 0;
+        tw2.omega = PI/2;
+
+        // translation + rotation
+        tw3.x = 1;
+        tw3.y = 1;
+        tw3.omega = PI/2;
+
+        // calculate integrate_twist for each case
+        Transform2D a1;
+        Transform2D a2;
+        Transform2D a3;
+
+        a1 = integrate_twist(tw1);
+        a2 = integrate_twist(tw2);
+        a3 = integrate_twist(tw3);
+
+        // test cases
+        REQUIRE_THAT(a1.translation().x, Catch::Matchers::WithinAbs(1,1.0E-3));
+        REQUIRE_THAT(a1.translation().y, Catch::Matchers::WithinAbs(0,1.0E-3));
+        REQUIRE_THAT(a1.rotation(), Catch::Matchers::WithinAbs(0,1.0E-3));
+
+        REQUIRE_THAT(a2.translation().x, Catch::Matchers::WithinAbs(0,1.0E-3));
+        REQUIRE_THAT(a2.translation().y, Catch::Matchers::WithinAbs(0,1.0E-3));
+        REQUIRE_THAT(a2.rotation(), Catch::Matchers::WithinAbs(PI/2,1.0E-3));
+
+        REQUIRE_THAT(a3.translation().x, Catch::Matchers::WithinAbs(0.527,1.0E-3));
+        REQUIRE_THAT(a3.translation().y, Catch::Matchers::WithinAbs(1.273,1.0E-3));
+        REQUIRE_THAT(a3.rotation(), Catch::Matchers::WithinAbs(PI/2,1.0E-3));
+
     }

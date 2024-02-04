@@ -21,6 +21,8 @@
 * B.5: visualization
 * B.6: executable implementation
 * B.7: README.md
+* B.8: Vector Operations
+* B.9: Integrate a Twist
 
 ## Task C
 * C.1: nusim package

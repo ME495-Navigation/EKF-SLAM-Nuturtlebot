@@ -17,7 +17,7 @@ namespace turtlelib
         if(b == '[')
         {
             is.get();
-            is >> tw.omega >> tw.x >> tw.y;
+            is >> tw.omega >> tw.x >> tw.y; // you never eat the last ]
         }
         else
         {
@@ -27,28 +27,28 @@ namespace turtlelib
     }
 
     // create an identity transformation
-    Transform2D::Transform2D(){
+    Transform2D::Transform2D(){ // initializer lists
         x = 0.0;
         y = 0.0;
         w = 0.0;
     }
     
     // create a transformation that is pure translation
-    Transform2D::Transform2D(Vector2D trans){
+    Transform2D::Transform2D(Vector2D trans){ // initializer lists
         x = trans.x;
         y = trans.y;
         w = 0.0;
     }
 
     // transformation with pure rotation
-    Transform2D::Transform2D(double radians){
+    Transform2D::Transform2D(double radians){ // initializer lists
         w = radians;
         x = 0.0;
         y = 0.0;
     }
 
     // transformation with translation and rotation
-    Transform2D::Transform2D(Vector2D trans, double radians){
+    Transform2D::Transform2D(Vector2D trans, double radians){ // initializer lists
         x = trans.x;
         y = trans.y;
         w = radians;
@@ -56,7 +56,7 @@ namespace turtlelib
 
     // apply transformation to a 2D point
     Point2D Transform2D::operator()(Point2D p) const{
-        Point2D newP;
+        Point2D newP; // no need for the temporary
         newP.x = ((p.x*std::cos(w))-(p.y*std::sin(w))) + x;
         newP.y = ((p.x*std::sin(w))+(p.y*std::cos(w))) + y;
         return newP;
@@ -64,7 +64,7 @@ namespace turtlelib
 
     // apply transformation to 2D vector
     Vector2D Transform2D::operator()(Vector2D v) const{
-        Vector2D newV;
+        Vector2D newV; // no need for the temporary
         newV.x = (v.x*std::cos(w)) - (v.y*std::sin(w));
         newV.y = (v.x*std::sin(w)) + (v.y*std::cos(w));
         return newV;
@@ -72,7 +72,7 @@ namespace turtlelib
 
     // apply transformation to 2D Twist
     Twist2D Transform2D::operator()(Twist2D v) const{
-        Twist2D tw;
+        Twist2D tw; // no need for the temporary
         tw.omega = v.omega;
         tw.x = (v.x*cos(w))-(v.y*sin(w))+(v.omega*y);
         tw.y = (v.x*sin(w))+(v.y*cos(w))-(v.omega*x);
@@ -108,7 +108,7 @@ namespace turtlelib
         t.x = x;
         t.y = y;
         
-        return t;
+        return t; // return {x, y}
     }
 
     // return angular displacement (w) of transfrom
@@ -118,7 +118,7 @@ namespace turtlelib
 
     // print out transform like deg:_, x:_, y:_
     std::ostream & operator<<(std::ostream & os, const Transform2D & tf){
-        double deg = rad2deg(tf.w);
+        double deg = rad2deg(tf.w); // const auto
         os << "deg: " << deg << " x: " << tf.x << " y: " << tf.y;
         return os;
     }
@@ -126,7 +126,7 @@ namespace turtlelib
     // read a transform from stdin
     std::istream & operator>>(std::istream & is, Transform2D & tf){
         // define new variables
-        double deg, x, y;
+        double deg, x, y; // unitialized variables
         is >> deg >> x >> y;
         tf = Transform2D{Vector2D{x,y}, deg2rad(deg)};
         return is;

@@ -12,9 +12,9 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  find_package(rviz2 REQUIRED)
+#  find_package(rviz2 REQUIRED) not a build dependency
   find_package(urdf REQUIRED)
-  find_package(xacro REQUIRED)
+#  find_package(xacro REQUIRED) not a build dependecny
 
   install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})

@@ -29,6 +29,7 @@ namespace turtlelib
     // set x and y components for point p
     std::istream & operator>>(std::istream & is, Point2D & p){
         is >> p.x >> p.y;
+        // what about the case where there is []?
         return is;
     }
 
@@ -37,7 +38,7 @@ namespace turtlelib
         Vector2D vec;
         vec.x = tail.x - head.x;
         vec.y = tail.y - head.y;
-        return vec;
+        return vec; // return {tail.x - head.x, tail.y - head.y}
     }
 
     // add vector to point to create new point displaced by vector
@@ -45,7 +46,7 @@ namespace turtlelib
         Point2D dispP;
         dispP.x = tail.x + disp.x;
         dispP.y = tail.y + disp.y;
-        return dispP;
+        return dispP; // no need for the temporary
     }
 
     // output a vector in format [x y]
@@ -56,17 +57,17 @@ namespace turtlelib
 
     // take input of a vector in format [x y]
     std::istream & operator>>(std::istream & is, Vector2D & v){
-        is >> v.x >> v.y;
+        is >> v.x >> v.y; // missing the case of []
         return is;
     }
 
     // normalize a Vector2D
     Vector2D normalize(Vector2D v){
-        Vector2D normV;
-        double m = sqrt((v.x*v.x) + (v.y*v.y));
+        Vector2D normV; // no need for this temporary
+        double m = sqrt((v.x*v.x) + (v.y*v.y)); // const auto &
         normV.x = v.x/m;
         normV.y = v.y/m;
-        return normV;
+        return normV; // return {}
     }
 }
 

@@ -5,7 +5,7 @@ namespace turtlelib
     void Svg::dPoint(Point2D a, const std::string& color)
     {
         // convert from svg coords to pixel coords 
-        double scale = 96.0;
+        double scale = 96.0; // these magic numbers should be constexpr and class-wide
         double x_off = 408.0;
         double y_off = 528.0;
         double x = (a.x*scale) + x_off;
@@ -19,7 +19,7 @@ namespace turtlelib
         double scale = 96.0;
         double x_off = 408.0;
         double y_off = 528.0;
-        double x1 = (head.x*scale) + x_off;
+        double x1 = (head.x*scale) + x_off; // const auto
         double y1 = (-head.y*scale) + y_off;
         double x2 = (tail.x*scale) + x_off;
         double y2 = (-tail.y*scale) + y_off;

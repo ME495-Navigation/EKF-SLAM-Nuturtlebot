@@ -77,6 +77,7 @@ public:
       qos_policy);
 
     // obstacle publisher
+    // superfluous this->
     obs_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
       "~/obstacles",
       qos_policy);
@@ -151,6 +152,8 @@ private:
   }
 
   // create a wall marker
+    /// DO NOT USE raw ARRAYS. use std::vector<>. How do you know that the caller of this function
+    // put the right number of elements in the array
   visualization_msgs::msg::Marker make_wall(int id, double scale[], const double pose[])
   {
     visualization_msgs::msg::Marker m;
@@ -158,11 +161,11 @@ private:
     m.header.stamp = get_clock()->now();
     m.type = visualization_msgs::msg::Marker::CUBE;
     m.action = visualization_msgs::msg::Marker::ADD;
-    m.scale.x = scale[0];
+    m.scale.x = scale[0]; // danger
     m.scale.y = scale[1];
     m.scale.z = scale[2];
 
-    m.pose.position.x = pose[0];
+    m.pose.position.x = pose[0]; // danger
     m.pose.position.y = pose[1];
     m.pose.position.z = pose[2];
     m.color.r = 1.0;
@@ -180,13 +183,13 @@ private:
     auto wall = visualization_msgs::msg::Marker();
 
     // location
-    double pose[3] = {0.0, 0.0, 0.0};
+    double pose[3] = {0.0, 0.0, 0.0}; // DO NOT USE ARRAYS
     pose[2] = wall_height;
 
-    double scale[3] = {0.0, 0.0, 0.0};
-    scale[2] = wall_height / 2;
+    double scale[3] = {0.0, 0.0, 0.0}; // dangerous
+    scale[2] = wall_height / 2; // /2.0
 
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i) { //rather than a loop with a bunch of if statements for each condition, write out each thing separately
       if (i == 0 || i == 2) {
         //left
         scale[0] = arena_x_length_;
@@ -222,10 +225,10 @@ private:
     // check if x and y are same if not log error
     if (obstacle_x_.size() != obstacle_y_.size()) {
       RCLCPP_ERROR_STREAM(get_logger(), "x and y vectors for the obstacles are not the same size!");
-      return;
+      return; // do not return, throw an exception
     }
 
-    for (int i = 0; i < int(obstacle_x_.size()); ++i) {
+    for (int i = 0; i < int(obstacle_x_.size()); ++i) { // size_t i, do not use int() cast here
       ob.header.frame_id = "nusim/world";
       ob.header.stamp = get_clock()->now();
       ob.type = visualization_msgs::msg::Marker::CYLINDER;
@@ -234,12 +237,12 @@ private:
       ob.color.a = 1.0;
       ob.id = i + 4;
       ob.frame_locked = true;
-      ob.scale.x = obstacle_r_ * 2;
-      ob.scale.y = obstacle_r_ * 2;
+      ob.scale.x = obstacle_r_ * 2; // 2.0
+      ob.scale.y = obstacle_r_ * 2; // 2.0
       ob.scale.z = wall_height;
-      ob.pose.position.x = obstacle_x_[i];
-      ob.pose.position.y = obstacle_y_[i];
-      ob.pose.position.z = wall_height / 2;
+      ob.pose.position.x = obstacle_x_[i]; // .at()
+      ob.pose.position.y = obstacle_y_[i]; // .at()
+      ob.pose.position.z = wall_height / 2; // 2.0
 
       obs.markers.push_back(ob);
     }

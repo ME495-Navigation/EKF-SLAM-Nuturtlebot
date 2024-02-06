@@ -37,9 +37,13 @@ namespace turtlelib{
         ///\param y Point2D for y axis
         ///\param tloc Point2D for location of frame label
         ///\param name string for frame label
-        void dCoordFrame(Point2D origin, Point2D x, Point2D y, Point2D tloc, std::string name);
+        void dCoordFrame(Point2D origin, Point2D x, Point2D y, Point2D tloc, std::string name); // const std::strintg &
 
-        /// \brief output footer and save svg to file 
+        /// \brief output footer and save svg to file
+        // 1. the return value is not documented
+        // 2. this is dangerous, you are returning a reference to an internal class varaible, which allows
+        // external entities to access the private member
+        // does calling  maintain the validity of this object
         std::stringstream & footer();
 
 
@@ -48,6 +52,7 @@ namespace turtlelib{
         std::stringstream svgSave;
 
         ///\brief include constant info for svg header
+        // static constexpr
         std::string header = "<svg width=\"8.500000in\" height=\"11.000000in\" viewBox=\"0 0 816.000000 1056.000000\" xmlns=\"http://www.w3.org/2000/svg\">\n"
                              "<defs>\n"
                               "<marker\n"

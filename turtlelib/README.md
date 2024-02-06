@@ -10,7 +10,7 @@ A library for handling transformations in SE(2) and other turtlebot-related math
 1. If you needed to be able to ~normalize~ Vector2D objects (i.e., find the unit vector in the direction of a given Vector2D):
    - Propose three different designs for implementing the ~normalize~ functionality
    1. Calculate the magnitude of the vector and divide the x and y component by the magnitude. Pass in a vector directly.
-   2. Normalize the components and pass those into the normalize function.
+   2. Normalize the components and pass those into the normalize function. # what would the purpose of this normalize function be?
    3. Reference the vector to be normalized.
 
    - Discuss the pros and cons of each proposed method, in light of the C++ Core Guidelines.

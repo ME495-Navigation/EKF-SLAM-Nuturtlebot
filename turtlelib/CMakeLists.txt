@@ -52,7 +52,7 @@ endif()
 # you don't need or want to.
 # name is the name of the library without the extension or lib prefix
 # name creates a cmake "target"
-add_library(turtlelib src/geometry2d.cpp src/se2d.cpp src/svg.cpp)
+add_library(turtlelib src/geometry2d.cpp src/se2d.cpp src/svg.cpp src/diff_drive.cpp)
 
 
 add_executable(frame_main src/frame_main.cpp)

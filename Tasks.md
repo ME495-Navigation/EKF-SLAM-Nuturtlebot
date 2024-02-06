@@ -32,3 +32,10 @@
 * C.5: cylindrical obstacles
 * C.6: nusim launch
 * C.7: README.md
+
+## Task D
+* D.1: DiffDrive class
+* 
+* 
+
+

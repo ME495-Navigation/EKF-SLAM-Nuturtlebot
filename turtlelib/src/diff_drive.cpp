@@ -27,7 +27,7 @@ namespace turtlelib
         return phi;
     }
 
-    void DiffDrive::f_kin(double right_ang_new, double left_ang_new)
+    Twist2D DiffDrive::f_kin(double right_ang_new, double left_ang_new)
     {
         // state deltas
         // phi_delta, x_delta, y_delta = Modern Robotics Eqn 13.15
@@ -42,6 +42,9 @@ namespace turtlelib
 
         // update q
         q = Transform2D({q.translation().x + x_delta, q.translation().y + y_delta}, phi_new);
+
+        // return twist
+        return Twist2D{phi_delta, x_delta, 0.0};
     }
 
     WheelAng DiffDrive::i_kin(Twist2D t)

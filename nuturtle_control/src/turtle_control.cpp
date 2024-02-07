@@ -120,26 +120,50 @@ public:
         declare_parameter("wheel_radius", 0.033);
         wheel_radius = get_parameter("wheel_radius").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "wheel radius: " << wheel_radius);
+        // if(wheel_radius.empty())
+        // {
+        //     throw std::logic_error("wheel_radius is empty!");
+        // }
 
         declare_parameter("track_width", 0.16);
         track_width = get_parameter("track_width").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "track width: " << track_width);
+        // if(track_width.empty())
+        // {
+        //     throw std::logic_error("track_width is empty!");
+        // }
 
         declare_parameter("motor_cmd_max", 265);
         motor_cmd_max = get_parameter("motor_cmd_max").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "motor cmd max: " << motor_cmd_max);
+        // if(motor_cmd_max.empty())
+        // {
+        //     throw std::logic_error("motor_cmd_max is empty!");
+        // }
 
         declare_parameter("motor_cmd_per_rad_sec", 0.024);
         motor_cmd_per_rad_sec = get_parameter("motor_cmd_per_rad_sec").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "motor cmd per rad sec: " << motor_cmd_per_rad_sec);
+        // if(motor_cmd_per_rad_sec.empty())
+        // {
+        //     throw std::logic_error("motor_cmd_per_rad_sec is empty!");
+        // }
 
         declare_parameter("encoder_ticks_per_rad", 651.8986);
         encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "encoder ticks per rad: " << encoder_ticks_per_rad);
+        // if(encoder_ticks_per_rad.empty())
+        // {
+        //     throw std::logic_error("encoder_ticks_per_rad is empty!");
+        // }
 
         declare_parameter("collision_radius", 0.11);
         collision_radius = get_parameter("collision_radius").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "collision radius: " << collision_radius);
+        // if(collision_radius.empty())
+        // {
+        //     throw std::logic_error("collision_radius is empty!");
+        // }
         
         // publishers - wheel commands and joint states
         wheelcom_pub = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("wheel_cmd", 10);

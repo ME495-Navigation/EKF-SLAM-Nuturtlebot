@@ -42,7 +42,7 @@ namespace turtlelib
             WheelAng get_phi() const;
 
             /// \brief forward kinematics - update q based on curr wheel state
-            void f_kin(double right_ang_new, double left_ange_new);
+            Twist2D f_kin(double right_ang_new, double left_ang_new);
 
             /// \brief inverse kinematics - compute wheel velocities required to make the robot move at a given twist
             WheelAng i_kin(Twist2D t);

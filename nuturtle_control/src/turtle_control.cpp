@@ -20,47 +20,61 @@ using namespace std::chrono_literals;
 class TurtleControl : public rclcpp::Node
 {
 private:
+    // params
+    double wheel_radius;
+    double track_width;
+    double motor_cmd_max;
+    double motor_cmd_per_rad_sec;
+    double encoder_ticks_per_rad;
+    double collision_radius;
+
     // callback for cmd_vel
     void cmdvel_callback(const geometry_msgs::msg::Twist & t)
     {
         // convert twist to twist2d --> t.linear.y is 0.0
-        auto tw = turtlelib::Twist2D{t.linear.x, 0.0, t.angular.z};
-        // compute wheel commands
-        auto wheel_cmd = diff_drive.i_kin(tw);
-        // calculate wheel_vel
-        auto wheel_vel = turtlelib::WheelAng{wheel_cmd.right_ang/motor_cmd_per_rad_sec, wheel_cmd.left_ang/motor_cmd_per_rad_sec};
+        const auto w_body = t.angular.z;
+        const auto x_body = t.linear.x;
+        const auto y_body = 0.0;
+        turtlelib::Twist2D tw{w_body, x_body, y_body};
+        // compute wheel state
+        turtlelib::WheelAng wheel_st = diff_drive.i_kin(tw);
+        // set up wheel commands
+        nuturtlebot_msgs::msg::WheelCommands wheelcom;
+        // set up wheel velocities
+        wheelcom.right_velocity = wheel_st.right_ang/motor_cmd_per_rad_sec;
+        wheelcom.left_velocity = wheel_st.left_ang/motor_cmd_per_rad_sec;
         // check if wheel_vel is within max limit
-        if (wheel_vel.right_ang > motor_cmd_max)
+        if (wheelcom.right_velocity > motor_cmd_max)
         {
             RCLCPP_ERROR_STREAM(get_logger(), "Right wheel velocity exceeds max limit! Setting to motor_cmd_max.");
-            wheel_vel.right_ang = motor_cmd_max;
+            wheelcom.right_velocity = motor_cmd_max;
         }
-        if (wheel_vel.left_ang > motor_cmd_max)
+        if (wheelcom.left_velocity > motor_cmd_max)
         {
             RCLCPP_ERROR_STREAM(get_logger(), "Left wheel velocity exceeds limit! Setting to motor_cmd_max.");
-            wheel_vel.left_ang = motor_cmd_max;
+            wheelcom.left_velocity = motor_cmd_max;
         }
         // check if wheel_vel is within min limit
-        if (wheel_vel.right_ang < -motor_cmd_max)
+        if (wheelcom.right_velocity < -motor_cmd_max)
         {
             RCLCPP_ERROR_STREAM(get_logger(), "Right wheel velocity exceeds min limit! Setting to -motor_cmd_max.");
-            wheel_vel.right_ang = -motor_cmd_max;
+            wheelcom.right_velocity = -motor_cmd_max;
         }
-        if (wheel_vel.left_ang < -motor_cmd_max)
+        if (wheelcom.left_velocity < -motor_cmd_max)
         {
             RCLCPP_ERROR_STREAM(get_logger(), "Left wheel velocity exceeds min limit! Setting to -motor_cmd_max.");
-            wheel_vel.left_ang = -motor_cmd_max;
+            wheelcom.left_velocity = -motor_cmd_max;
         }
         // publish wheel commands
-        wheelcom_pub->publish(wheel_vel);
+        wheelcom_pub->publish(wheelcom);
     }
 
     // callback for sensor_data
-    void sensordata_callback(const sensor_msgs::msg::JointState & s)
+    void sensordata_callback(const nuturtlebot_msgs::msg::SensorData & s)
     {
         // calculate joint positions
-        auto right_wheel_jointpos = s.right_encoder/encoder_ticks_per_rad;
-        auto left_wheel_jointpos = s.left_encoder/encoder_ticks_per_rad;
+        auto right_wheel_jointpos = static_cast<double>(s.right_encoder)/encoder_ticks_per_rad;
+        auto left_wheel_jointpos = static_cast<double>(s.left_encoder)/encoder_ticks_per_rad;
 
         // need dt to calculate joint velocities -- need header stamp to calculate current and future timestamp
         if(first)
@@ -88,11 +102,11 @@ private:
     }
 
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmdvel_sub;
-    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sensordata_sub;
+    rclcpp::Subscription<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensordata_sub;
     rclcpp::Publisher<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheelcom_pub;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr jointstate_pub;
 
-    turtlelib::DiffDrive diff_drive;
+    turtlelib::DiffDrive diff_drive{0.0,0.0};
     sensor_msgs::msg::JointState joints;
     bool first = true;
 
@@ -104,27 +118,27 @@ public:
 
         // take params defined in nuturtle_description diff_params.yaml
         declare_parameter("wheel_radius", 0.033);
-        const auto wheel_radius = get_parameter("wheel_radius").as_double();
+        wheel_radius = get_parameter("wheel_radius").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "wheel radius: " << wheel_radius);
 
         declare_parameter("track_width", 0.16);
-        const auto track_width = get_parameter("track_width").as_double();
+        track_width = get_parameter("track_width").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "track width: " << track_width);
 
         declare_parameter("motor_cmd_max", 265);
-        const auto motor_cmd_max = get_parameter("motor_cmd_max").as_double();
+        motor_cmd_max = get_parameter("motor_cmd_max").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "motor cmd max: " << motor_cmd_max);
 
         declare_parameter("motor_cmd_per_rad_sec", 0.024);
-        const auto motor_cmd_per_rad_sec = get_parameter("motor_cmd_per_rad_sec").as_double();
+        motor_cmd_per_rad_sec = get_parameter("motor_cmd_per_rad_sec").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "motor cmd per rad sec: " << motor_cmd_per_rad_sec);
 
         declare_parameter("encoder_ticks_per_rad", 651.8986);
-        const auto encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
+        encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "encoder ticks per rad: " << encoder_ticks_per_rad);
 
         declare_parameter("collision_radius", 0.11);
-        const auto collision_radius = get_parameter("collision_radius").as_double();
+        collision_radius = get_parameter("collision_radius").as_double();
         RCLCPP_INFO_STREAM(get_logger(), "collision radius: " << collision_radius);
         
         // publishers - wheel commands and joint states
@@ -133,7 +147,7 @@ public:
         
         // subscribers - cmd_vel and sensor_data
         cmdvel_sub = create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 10, std::bind(&TurtleControl::cmdvel_callback, this, std::placeholders::_1));
-        sensordata_sub = create_subscription<sensor_msgs::msg::JointState>("sensor_data", 10, std::bind(&TurtleControl::sensordata_callback, this, std::placeholders::_1));
+        sensordata_sub = create_subscription<nuturtlebot_msgs::msg::SensorData>("sensor_data", 10, std::bind(&TurtleControl::sensordata_callback, this, std::placeholders::_1));
     }
 };
 

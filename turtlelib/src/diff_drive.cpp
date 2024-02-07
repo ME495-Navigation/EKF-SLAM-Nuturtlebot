@@ -44,7 +44,7 @@ namespace turtlelib
         q = Transform2D({q.translation().x + x_delta, q.translation().y + y_delta}, phi_new);
     }
 
-    auto DiffDrive::i_kin(Twist2D t)
+    WheelAng DiffDrive::i_kin(Twist2D t)
     {
         // need to add logic for slipping wheels
         if(almost_equal(t.y, 0.0, 1e-6))

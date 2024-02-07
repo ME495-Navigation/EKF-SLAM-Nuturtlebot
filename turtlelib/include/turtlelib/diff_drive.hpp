@@ -45,7 +45,7 @@ namespace turtlelib
             void f_kin(double right_ang_new, double left_ange_new);
 
             /// \brief inverse kinematics - compute wheel velocities required to make the robot move at a given twist
-            auto i_kin(Twist2D t);
+            WheelAng i_kin(Twist2D t);
            
             /// \brief change q to desired x,y,theta
             void q_new(Transform2D s);

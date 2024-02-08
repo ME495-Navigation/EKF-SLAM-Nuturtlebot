@@ -6,10 +6,11 @@
     <arg name="use_rviz" default="true"/>
 
     <!-- cmd_src -->
-    <!-- TODO: put circle as option once circle node written -->
-    <!-- <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" name="teleop" output="screen">
-        launch-prefix="xterm -e" if="$(eval '\'$(var cmd_src)\' == \'teleop\'')"/>
-    </node> -->
+    <group if="$(eval '\'$(var cmd_src)\' == \'circle\'')">
+        <node pkg="nuturtle_control" exec="circle" name="circle">
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml" />
+        </node>
+    </group>
 
     <!-- robot -->
     <group if="$(eval '\'$(var robot)\' == \'nusim\'')">
@@ -52,7 +53,19 @@
         </include>
     </group>
 
+    <group if="$(eval '\'$(var robot)\' == \'localhost\'')">
+        <node pkg="nuturtle_control" exec="turtle_control" name="turtle_control">
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml" />
+            <remap from="/joint_states" to="blue/joint_states"/>
+        </node>
+
+        <node pkg="numsr_turtlebot" exec="numsr_turtlebot" name="numsr_turtlebot"/>
+        
+        <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nuturtle_control)/config/blue.rviz" if="$(eval '\'$(var use_rviz)\' == \'true\'')"/>
+
+    </group>
+
     <!-- publish transform between nusim/world and odom frame -->
-    <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_odom" args="0 0 0 0 0 0 nusim/world odom" if="$(eval '\'$(var robot)\' == \'nusim\'')"/>
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_odom" args="0 0 0 0 0 0 nusim/world odom"/>
 
 </launch>

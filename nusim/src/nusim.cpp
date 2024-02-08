@@ -128,6 +128,9 @@ private:
     // update robot state
     double right_ang_new = wheel_vel.right_ang / 200.0 + diffdrive.get_phi().right_ang;
     double left_ang_new = wheel_vel.left_ang / 200.0 + diffdrive.get_phi().left_ang;
+    // double right_ang_new = wheel_vel.right_ang / 200.0;
+    // double left_ang_new = wheel_vel.left_ang / 200.0;
+    
     diffdrive.f_kin(right_ang_new, left_ang_new);
     // update transform
     tf.transform.translation.x = diffdrive.get_q().translation().x;

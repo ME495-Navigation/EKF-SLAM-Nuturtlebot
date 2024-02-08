@@ -61,7 +61,7 @@ namespace turtlelib
         // return Twist2D{phi_delta, x_delta, 0.0};
 
         Twist2D tw = get_body_twist(left_ang_new, right_ang_new);
-
+        
         // Update wheel angles
         phi = {right_ang_new, left_ang_new};
     
@@ -69,7 +69,7 @@ namespace turtlelib
         // Transform needed to get to new wheel positions
         // Refer to the second page of doc/Kinematics.pdf, step 3
         Transform2D t = integrate_twist(tw);
-
+        
         // Transform from world to base
         Transform2D t_wb = {{q.translation().x, q.translation().y}, q.rotation()};
 
@@ -90,7 +90,7 @@ namespace turtlelib
     WheelAng DiffDrive::i_kin(Twist2D t)
     {
         // need to add logic for slipping wheels
-        if(almost_equal(t.y, 0.0, 1e-6))
+        if(almost_equal(t.y, 0.0))
         {
             const double phi_right = (1/radius)*(t.x + ((width*t.omega)/2));
             const double phi_left = (1/radius)*(t.x - ((width*t.omega)/2));

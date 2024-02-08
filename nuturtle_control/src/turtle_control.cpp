@@ -34,7 +34,7 @@ private:
         // convert twist to twist2d --> t.linear.y is 0.0
         const auto w_body = t.angular.z;
         const auto x_body = t.linear.x;
-        const auto y_body = 0.0;
+        const auto y_body = t.linear.y;
         turtlelib::Twist2D tw{w_body, x_body, y_body};
         // compute wheel state
         turtlelib::WheelAng wheel_st = diff_drive.i_kin(tw);
@@ -43,6 +43,7 @@ private:
         // set up wheel velocities
         wheelcom.right_velocity = wheel_st.right_ang/motor_cmd_per_rad_sec;
         wheelcom.left_velocity = wheel_st.left_ang/motor_cmd_per_rad_sec;
+        // RCLCPP_ERROR_STREAM(get_logger(), "Right wheel velocity: " << wheel_st.right_ang);
         // check if wheel_vel is within max limit
         if (wheelcom.right_velocity > motor_cmd_max)
         {
@@ -57,12 +58,12 @@ private:
         // check if wheel_vel is within min limit
         if (wheelcom.right_velocity < -motor_cmd_max)
         {
-            RCLCPP_ERROR_STREAM(get_logger(), "Right wheel velocity exceeds min limit! Setting to -motor_cmd_max.");
+            // RCLCPP_ERROR_STREAM(get_logger(), "Right wheel velocity exceeds min limit! Setting to -motor_cmd_max.");
             wheelcom.right_velocity = -motor_cmd_max;
         }
         if (wheelcom.left_velocity < -motor_cmd_max)
         {
-            RCLCPP_ERROR_STREAM(get_logger(), "Left wheel velocity exceeds min limit! Setting to -motor_cmd_max.");
+            // RCLCPP_ERROR_STREAM(get_logger(), "Left wheel velocity exceeds min limit! Setting to -motor_cmd_max.");
             wheelcom.left_velocity = -motor_cmd_max;
         }
         // publish wheel commands
@@ -106,7 +107,7 @@ private:
     rclcpp::Publisher<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheelcom_pub;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr jointstate_pub;
 
-    turtlelib::DiffDrive diff_drive{0.0,0.0};
+    turtlelib::DiffDrive diff_drive{999.0,999.0};
     sensor_msgs::msg::JointState joints;
     bool first = true;
 
@@ -165,6 +166,8 @@ public:
         //     throw std::logic_error("collision_radius is empty!");
         // }
         
+        diff_drive = {track_width, wheel_radius};
+
         // publishers - wheel commands and joint states
         wheelcom_pub = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("wheel_cmd", 10);
         jointstate_pub = create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);

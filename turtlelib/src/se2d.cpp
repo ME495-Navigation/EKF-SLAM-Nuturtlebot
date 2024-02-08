@@ -149,11 +149,11 @@ namespace turtlelib
         } else{
             Vector2D v;
             v.x = t.y/t.omega;
-            v.y = -t.x/t.x;
+            v.y = -t.x/t.omega;
             Transform2D Tsb(v);
             Transform2D Tss(t.omega);
             Transform2D Tbs = Tsb.inv();
-            
+    
             return Tbs*Tss*Tsb;
         }
     }

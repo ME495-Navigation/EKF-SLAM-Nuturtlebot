@@ -41,6 +41,9 @@ namespace turtlelib
             /// \brief current wheel state
             WheelAng get_phi() const;
 
+            /// \brief compute twist in body frame
+            Twist2D get_body_twist(const double new_left, const double new_right);
+
             /// \brief forward kinematics - update q based on curr wheel state
             Twist2D f_kin(double right_ang_new, double left_ang_new);
 

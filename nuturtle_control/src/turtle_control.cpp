@@ -134,7 +134,7 @@ public:
         // }
 
         declare_parameter("motor_cmd_max", 265);
-        motor_cmd_max = get_parameter("motor_cmd_max").as_double();
+        motor_cmd_max = get_parameter("motor_cmd_max").as_int();
         RCLCPP_INFO_STREAM(get_logger(), "motor cmd max: " << motor_cmd_max);
         // if(motor_cmd_max.empty())
         // {

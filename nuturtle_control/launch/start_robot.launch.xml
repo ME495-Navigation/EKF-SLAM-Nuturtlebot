@@ -59,11 +59,26 @@
             <remap from="/joint_states" to="blue/joint_states"/>
         </node>
 
-        <node pkg="numsr_turtlebot" exec="numsr_turtlebot" name="numsr_turtlebot"/>
-        
-        <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nuturtle_control)/config/blue.rviz" if="$(eval '\'$(var use_rviz)\' == \'true\'')"/>
+        <node pkg="nuturtle_control" exec="odometry" name="odometry" output="screen">
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml" />
+            <param name="body_id" value="blue/base_footprint" />
+            <param name="odom_id" value="odom" />
+            <param name="wheel_left" value="left_wheel_joint" />
+            <param name="wheel_right" value="right_wheel_joint" />
+        </node>
+
+        <!-- <node pkg="numsr_turtlebot" exec="numsr_turtlebot" name="numsr_turtlebot"/> -->
 
     </group>
+
+    <node pkg="turtlebot3_teleop" exec="teleop_keyboard"
+        if="$(eval '\'$(var robot)\' != \'localhost\' and \'$(var cmd_src)\' == \'teleop\'')"
+        launch-prefix="xterm -e" >
+    </node>
+
+    <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nuturtle_control)/config/blue.rviz" 
+        if="$(eval '\'$(var use_rviz)\' == \'true\' and \'$(var robot)\' != \'localhost\' and \'$(var robot)\' != \'nusim\' ')" > 
+    </node>
 
     <!-- publish transform between nusim/world and odom frame -->
     <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_odom" args="0 0 0 0 0 0 nusim/world odom"/>

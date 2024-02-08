@@ -14,7 +14,7 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(rviz2 REQUIRED)
   find_package(urdf REQUIRED)
-  find_package(xacro REQUIRED)
+  find_package(xacro)
 
   install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})

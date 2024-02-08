@@ -1,0 +1,58 @@
+<!-- allows user to cmd_vel commands to turtlebot (real or simulated), receive odom, and visualize everything in rviz -->
+<launch>
+    <!-- arguments: cmd_src, robot, use_rviz (declare these as arguments) -->
+    <arg name="cmd_src" default="none"/>
+    <arg name="robot" default="nusim"/>
+    <arg name="use_rviz" default="true"/>
+
+    <!-- cmd_src -->
+    <!-- TODO: put circle as option once circle node written -->
+    <!-- <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" name="teleop" output="screen">
+        launch-prefix="xterm -e" if="$(eval '\'$(var cmd_src)\' == \'teleop\'')"/>
+    </node> -->
+
+    <!-- robot -->
+    <group if="$(eval '\'$(var robot)\' == \'nusim\'')">
+         <!-- launch rviz with new config -->
+         <node pkg="rviz2" exec="rviz2" name="rviz" args="-d $(find-pkg-share nuturtle_control)/config/red_blue.rviz" if="$(eval '\'$(var use_rviz)\' == \'true\'')"/>
+
+        <!-- launch turtle_control and odometry if robot = nusim -->
+        <node pkg="nuturtle_control" exec="turtle_control" name="turtle_control">
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml" />
+            <remap from="wheel_cmd" to="red/wheel_cmd" />
+            <remap from="wheel_joint_states" to="red/wheel_joint_states" />
+            <remap from="sensor_data" to="red/sensor_data" />
+        </node>
+
+        <node pkg="nuturtle_control" exec="odometry" name="odometry" output="screen">
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml" />
+            <param name="body_id" value="blue/base_footprint" />
+            <param name="odom_id" value="odom" />
+            <param name="wheel_left" value="left_wheel_joint" />
+            <param name="wheel_right" value="right_wheel_joint" />
+        </node>
+
+        <!-- launch nusim node -->
+        <node pkg="nusim" exec="nusim">
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml" />
+            <param from="$(find-pkg-share nusim)/config/basic_world.yaml" />
+        </node>
+
+       <!-- load_one for red and blue -->
+        <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+            <arg name="color" value="red" />
+            <arg name="use_rviz" value="false" />
+            <arg name="use_jsp" value="false" />
+        </include>
+
+        <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+            <arg name="color" value="blue" />
+            <arg name="use_rviz" value="false" />
+            <arg name="use_jsp" value="false" />
+        </include>
+    </group>
+
+    <!-- publish transform between nusim/world and odom frame -->
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_odom" args="0 0 0 0 0 0 nusim/world odom" if="$(eval '\'$(var robot)\' == \'nusim\'')"/>
+
+</launch>

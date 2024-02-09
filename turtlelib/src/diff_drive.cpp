@@ -92,8 +92,8 @@ namespace turtlelib
         // need to add logic for slipping wheels
         if(almost_equal(t.y, 0.0))
         {
-            const double phi_right = (1/radius)*(t.x + ((width*t.omega)/2));
-            const double phi_left = (1/radius)*(t.x - ((width*t.omega)/2));
+            const double phi_right = (t.x + width*t.omega)/radius;
+            const double phi_left = (t.x - width*t.omega)/radius;
             return WheelAng{phi_right, phi_left};
         }
         else

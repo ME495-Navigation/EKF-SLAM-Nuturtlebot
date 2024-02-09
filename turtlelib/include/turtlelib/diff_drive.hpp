@@ -30,18 +30,27 @@ namespace turtlelib
 
         public:
             /// \brief constructor
+            /// \param wheel_radius radius of the wheel
+            /// \param track_width distance between the wheels
             DiffDrive(double wheel_radius, double track_width);
 
             /// \brief world to body frame
+            /// \param wheel_radius radius of the wheel
+            /// \param track_width distance between the wheels
+            /// \param s initial state
             DiffDrive(double wheel_radius, double track_width, Transform2D s);
 
             /// \brief current q in world frame
+            /// \return current q
             Transform2D get_q() const;
 
             /// \brief current wheel state
+            /// \return current phi
             WheelAng get_phi() const;
 
             /// \brief compute twist in body frame
+            /// \param new_left new left wheel pos
+            /// \param new_right new right wheel pos
             Twist2D get_body_twist(const double new_left, const double new_right);
 
             /// \brief forward kinematics - update q based on curr wheel state

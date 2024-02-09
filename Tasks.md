@@ -31,11 +31,21 @@
 * C.4: walls
 * C.5: cylindrical obstacles
 * C.6: nusim launch
-* C.7: README.md
+* C.7: turtle drive
+* C.8: README.md
 
 ## Task D
 * D.1: DiffDrive class
-* 
-* 
+
 
 ## Task E
+* E.1: turtle interface
+* E.2: odometry node
+* E.3: circle
+* E.5: launchfile
+
+## Task F
+* F.1: turtlebot setup
+* F.2: cross-compilation
+* F.5: physical testing
+

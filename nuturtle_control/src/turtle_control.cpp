@@ -66,6 +66,7 @@ private:
             // RCLCPP_ERROR_STREAM(get_logger(), "Left wheel velocity exceeds min limit! Setting to -motor_cmd_max.");
             wheelcom.left_velocity = -motor_cmd_max;
         }
+
         // publish wheel commands
         wheelcom_pub->publish(wheelcom);
     }
@@ -166,7 +167,7 @@ public:
         //     throw std::logic_error("collision_radius is empty!");
         // }
         
-        diff_drive = {track_width, wheel_radius};
+        diff_drive = {wheel_radius,track_width};
 
         // publishers - wheel commands and joint states
         wheelcom_pub = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("wheel_cmd", 10);

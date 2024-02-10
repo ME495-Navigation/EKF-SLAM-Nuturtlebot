@@ -8,4 +8,3 @@ This repository consists of several ROS packages
 - turtlelib - calculates 2D rigid body transformations.
 - nusim - provides a simulated turtlebot environment with obstacles and an arena.
 - nuturtle_control - provides turtle_control, odometry, and circle nodes for the controlling the simulated and real turtlebot3
-

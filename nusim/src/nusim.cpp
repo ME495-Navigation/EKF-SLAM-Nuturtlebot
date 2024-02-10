@@ -130,7 +130,7 @@ private:
     double left_ang_new = wheel_vel.left_ang / 200.0 + diffdrive.get_phi().left_ang;
     // double right_ang_new = wheel_vel.right_ang / 200.0;
     // double left_ang_new = wheel_vel.left_ang / 200.0;
-    
+
     diffdrive.f_kin(right_ang_new, left_ang_new);
     // update transform
     tf.transform.translation.x = diffdrive.get_q().translation().x;
@@ -303,7 +303,8 @@ private:
 
   void wheelcom_callback(const nuturtlebot_msgs::msg::WheelCommands::SharedPtr msg)
   {
-    wheel_vel = {msg->left_velocity * motor_cmd_per_rad_sec, msg->right_velocity * motor_cmd_per_rad_sec};
+    wheel_vel =
+    {msg->left_velocity * motor_cmd_per_rad_sec, msg->right_velocity * motor_cmd_per_rad_sec};
   }
 
   // initialize variables

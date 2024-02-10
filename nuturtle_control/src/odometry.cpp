@@ -1,3 +1,20 @@
+/// \file odometry.cpp
+/// \brief This is a ROS2 node that publishes odometry messages and the odometry transform.
+/// PARAMETERS:
+///   body_id (string): The name of the robot's body frame.
+///   odom_id (string): The name of the robot's odometry frame.
+///   wheel_left (string): The name of the left wheel joint.
+///   wheel_right (string): The name of the right wheel joint.
+///   wheel_radius (double): The radius of the wheels.
+///   track_width (double): The distance between the wheels.
+/// PUBLISHES:
+///   odom (nav_msgs::msg::Odometry): The odometry message.
+///   tf (tf2_msgs::msg::TFMessage): The transform message.
+/// SUBSCRIBES:
+///   joint_states (sensor_msgs::msg::JointState): The joint state message.
+/// SERVICES:
+///   initial_pose (nuturtle_control::srv::InitialPose): The service to set the initial pose of the robot.
+
 // publishes odometry messages and the odometry transform
 #include <chrono>
 #include <functional>
@@ -25,169 +42,170 @@ using namespace std::chrono_literals;
 class Odometry : public rclcpp::Node
 {
 private:
-    // params
-    double wheel_radius = 999.0;
-    double track_width = 999.0;
-    std::string body_id;
-    std::string odom_id;
-    std::string wheel_left;
-    std::string wheel_right;
+  // params
+  double wheel_radius = 999.0;
+  double track_width = 999.0;
+  std::string body_id;
+  std::string odom_id;
+  std::string wheel_left;
+  std::string wheel_right;
 
-    // joint state callback
-    void jointstate_callback(const sensor_msgs::msg::JointState & js)
-    {
-        // calculate next wheel pos
-        turtlelib::WheelAng w;
-        // w.right_ang = js.position.at(0) + wheel_pos_last.right_ang;
-        w.right_ang = js.position.at(0) + js.velocity.at(0) / 200.0;
-        // w.left_ang = js.position.at(1) - wheel_pos_last.left_ang;
-        w.left_ang = js.position.at(1) + js.velocity.at(1) / 200.0;
+  // joint state callback
+  void jointstate_callback(const sensor_msgs::msg::JointState & js)
+  {
+    // calculate next wheel pos
+    turtlelib::WheelAng w;
+    // w.right_ang = js.position.at(0) + wheel_pos_last.right_ang;
+    w.right_ang = js.position.at(0) + js.velocity.at(0) / 200.0;
+    // w.left_ang = js.position.at(1) - wheel_pos_last.left_ang;
+    w.left_ang = js.position.at(1) + js.velocity.at(1) / 200.0;
 
-        // update last wheel pos to current wheel pos
-        wheel_pos_last.right_ang = js.position.at(0);
-        wheel_pos_last.left_ang = js.position.at(1);
+    // update last wheel pos to current wheel pos
+    wheel_pos_last.right_ang = js.position.at(0);
+    wheel_pos_last.left_ang = js.position.at(1);
 
-        // use fk to update q
-        turtlelib::Twist2D tw = diffdrive.f_kin(w.right_ang, w.left_ang);
-        // take curr q
-        turtlelib::Transform2D q = diffdrive.get_q();
-        // get time now
-        odom_f.header.stamp = this->now();
-        // set q.x and q.y
-        odom_f.pose.pose.position.x = q.translation().x;
-        
-        odom_f.pose.pose.position.y = q.translation().y;
-        // set q.theta
-        tf2::Quaternion Q;
-        // RCLCPP_ERROR_STREAM(get_logger(), "q: " << q);
-        Q.setRPY(0, 0, q.rotation());
-        odom_f.pose.pose.orientation.x = Q.x();
-        odom_f.pose.pose.orientation.y = Q.y();
-        odom_f.pose.pose.orientation.z = Q.z();
-        odom_f.pose.pose.orientation.w = Q.w();
-        // now twist
-        odom_f.twist.twist.linear.x = tw.x;
-        odom_f.twist.twist.linear.y = tw.y;
-        odom_f.twist.twist.angular.z = tw.omega;
+    // use fk to update q
+    turtlelib::Twist2D tw = diffdrive.f_kin(w.right_ang, w.left_ang);
+    // take curr q
+    turtlelib::Transform2D q = diffdrive.get_q();
+    // get time now
+    odom_f.header.stamp = this->now();
+    // set q.x and q.y
+    odom_f.pose.pose.position.x = q.translation().x;
 
-        // update transform stamped
-        geometry_msgs::msg::TransformStamped tf;
-        // take time now with transform
-        tf.header.stamp = this->now();
-        // set frame id
-        tf.header.frame_id = odom_id;
-        // set child frame id
-        tf.child_frame_id = body_id;
-        // set translation
-        tf.transform.translation.x = q.translation().x;
-        tf.transform.translation.y = q.translation().y;
-        tf.transform.translation.z = 0.0;
-        // set rotation
-        tf.transform.rotation.x = Q.x();
-        tf.transform.rotation.y = Q.y();
-        tf.transform.rotation.z = Q.z();
-        tf.transform.rotation.w = Q.w();
+    odom_f.pose.pose.position.y = q.translation().y;
+    // set q.theta
+    tf2::Quaternion Q;
+    // RCLCPP_ERROR_STREAM(get_logger(), "q: " << q);
+    Q.setRPY(0, 0, q.rotation());
+    odom_f.pose.pose.orientation.x = Q.x();
+    odom_f.pose.pose.orientation.y = Q.y();
+    odom_f.pose.pose.orientation.z = Q.z();
+    odom_f.pose.pose.orientation.w = Q.w();
+    // now twist
+    odom_f.twist.twist.linear.x = tw.x;
+    odom_f.twist.twist.linear.y = tw.y;
+    odom_f.twist.twist.angular.z = tw.omega;
 
-        // publish odom and tf
-        odom_pub->publish(odom_f);
-        tf_broadcaster->sendTransform(tf);
-    }
+    // update transform stamped
+    geometry_msgs::msg::TransformStamped tf;
+    // take time now with transform
+    tf.header.stamp = this->now();
+    // set frame id
+    tf.header.frame_id = odom_id;
+    // set child frame id
+    tf.child_frame_id = body_id;
+    // set translation
+    tf.transform.translation.x = q.translation().x;
+    tf.transform.translation.y = q.translation().y;
+    tf.transform.translation.z = 0.0;
+    // set rotation
+    tf.transform.rotation.x = Q.x();
+    tf.transform.rotation.y = Q.y();
+    tf.transform.rotation.z = Q.z();
+    tf.transform.rotation.w = Q.w();
 
-    // initial pose service
-    void initial_pose(const std::shared_ptr<nuturtle_control::srv::InitialPose::Request> request,
-                      std::shared_ptr<nuturtle_control::srv::InitialPose::Response>)
-    {
-        // reset simulation
-        turtlelib::Transform2D reset_rob {{request->x,request->y},request->w};
-        diffdrive.q_new(reset_rob);
-    }
+    // publish odom and tf
+    odom_pub->publish(odom_f);
+    tf_broadcaster->sendTransform(tf);
+  }
 
-    // other to init
-    turtlelib::DiffDrive diffdrive{wheel_radius, track_width};
-    turtlelib::WheelAng wheel_pos_last;
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
-    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr jointstate_sub;
-    rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
-    nav_msgs::msg::Odometry odom_f;
-    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
+  // initial pose service
+  void initial_pose(
+    const std::shared_ptr<nuturtle_control::srv::InitialPose::Request> request,
+    std::shared_ptr<nuturtle_control::srv::InitialPose::Response>)
+  {
+    // reset simulation
+    turtlelib::Transform2D reset_rob {{request->x, request->y}, request->w};
+    diffdrive.q_new(reset_rob);
+  }
 
+  // other to init
+  turtlelib::DiffDrive diffdrive{wheel_radius, track_width};
+  turtlelib::WheelAng wheel_pos_last;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr jointstate_sub;
+  rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
+  nav_msgs::msg::Odometry odom_f;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
 
 public:
-    Odometry():Node("odometry")
-    {
-        // declare parameters + log error message if does not exist
-        declare_parameter("rate", 200);
+  Odometry()
+  : Node("odometry")
+  {
+    // declare parameters + log error message if does not exist
+    declare_parameter("rate", 200);
 
-        declare_parameter("body_id", body_id);
-        body_id = get_parameter("body_id").as_string();
-        RCLCPP_INFO_STREAM(get_logger(), "body_id: " << body_id);
-        if(body_id.empty())
-        {
-            throw std::logic_error("body_id is empty!");
-        }
-
-        declare_parameter("odom_id", odom_id);
-        odom_id = get_parameter("odom_id").as_string();
-        RCLCPP_INFO_STREAM(get_logger(), "odom_id: " << odom_id);
-        // set default to odom if left empty
-        if(odom_id.empty())
-        {
-            odom_id = "odom";
-        }
-
-        declare_parameter("wheel_left", wheel_left);
-        wheel_left = get_parameter("wheel_left").as_string();
-        RCLCPP_INFO_STREAM(get_logger(), "wheel_left: " << wheel_left);
-        if(wheel_left.empty())
-        {
-            throw std::logic_error("wheel_left is empty!");
-        }
-
-        declare_parameter("wheel_right", wheel_right);
-        wheel_right = get_parameter("wheel_right").as_string();
-        RCLCPP_INFO_STREAM(get_logger(), "wheel_right: " << wheel_right);
-        if(wheel_right.empty())
-        {
-            throw std::logic_error("wheel_right is empty!");
-        }
-
-        declare_parameter("wheel_radius", wheel_radius);
-        wheel_radius = get_parameter("wheel_radius").as_double();
-
-        declare_parameter("track_width", track_width);
-        track_width = get_parameter("track_width").as_double();
-
-        // publisher
-        odom_pub = create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-
-        // subscriber
-        jointstate_sub = create_subscription<sensor_msgs::msg::JointState>("joint_states", 10, std::bind(&Odometry::jointstate_callback, this, std::placeholders::_1));
-
-        // frame stuff for odom object and tf object
-        odom_f.header.frame_id = odom_id;
-        odom_f.child_frame_id = body_id;
-
-        // broadcaster
-        tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-
-        // initial pose service
-        // initial_pose_srv_ = create_service<nuturtle_control::srv::InitialPose>(
-        //     "initial_pose",
-        //     std::bind(&Odometry::initial_pose, this, std::placeholders::_1, std::placeholders::_2));
-        initial_pose_srv_ = create_service<nuturtle_control::srv::InitialPose>("initial_pose", std::bind(&Odometry::initial_pose, this, std::placeholders::_1, std::placeholders::_2));
-
-        // additional initializations
-        diffdrive = {wheel_radius, track_width};
-        wheel_pos_last.left_ang = 0.0;
-        wheel_pos_last.right_ang = 0.0;
+    declare_parameter("body_id", body_id);
+    body_id = get_parameter("body_id").as_string();
+    RCLCPP_INFO_STREAM(get_logger(), "body_id: " << body_id);
+    if (body_id.empty()) {
+      throw std::logic_error("body_id is empty!");
     }
+
+    declare_parameter("odom_id", odom_id);
+    odom_id = get_parameter("odom_id").as_string();
+    RCLCPP_INFO_STREAM(get_logger(), "odom_id: " << odom_id);
+    // set default to odom if left empty
+    if (odom_id.empty()) {
+      odom_id = "odom";
+    }
+
+    declare_parameter("wheel_left", wheel_left);
+    wheel_left = get_parameter("wheel_left").as_string();
+    RCLCPP_INFO_STREAM(get_logger(), "wheel_left: " << wheel_left);
+    if (wheel_left.empty()) {
+      throw std::logic_error("wheel_left is empty!");
+    }
+
+    declare_parameter("wheel_right", wheel_right);
+    wheel_right = get_parameter("wheel_right").as_string();
+    RCLCPP_INFO_STREAM(get_logger(), "wheel_right: " << wheel_right);
+    if (wheel_right.empty()) {
+      throw std::logic_error("wheel_right is empty!");
+    }
+
+    declare_parameter("wheel_radius", wheel_radius);
+    wheel_radius = get_parameter("wheel_radius").as_double();
+
+    declare_parameter("track_width", track_width);
+    track_width = get_parameter("track_width").as_double();
+
+    // publisher
+    odom_pub = create_publisher<nav_msgs::msg::Odometry>("odom", 10);
+
+    // subscriber
+    jointstate_sub = create_subscription<sensor_msgs::msg::JointState>(
+      "joint_states", 10, std::bind(
+        &Odometry::jointstate_callback, this, std::placeholders::_1));
+
+    // frame stuff for odom object and tf object
+    odom_f.header.frame_id = odom_id;
+    odom_f.child_frame_id = body_id;
+
+    // broadcaster
+    tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
+    // initial pose service
+    // initial_pose_srv_ = create_service<nuturtle_control::srv::InitialPose>(
+    //     "initial_pose",
+    //     std::bind(&Odometry::initial_pose, this, std::placeholders::_1, std::placeholders::_2));
+    initial_pose_srv_ = create_service<nuturtle_control::srv::InitialPose>(
+      "initial_pose", std::bind(
+        &Odometry::initial_pose, this, std::placeholders::_1, std::placeholders::_2));
+
+    // additional initializations
+    diffdrive = {wheel_radius, track_width};
+    wheel_pos_last.left_ang = 0.0;
+    wheel_pos_last.right_ang = 0.0;
+  }
 
 };
 
 int main(int argc, char * argv[])
 {
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<Odometry>());
-    rclcpp::shutdown();
-    return 0;
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<Odometry>());
+  rclcpp::shutdown();
+  return 0;
 }

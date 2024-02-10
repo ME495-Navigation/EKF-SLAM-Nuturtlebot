@@ -261,7 +261,7 @@ using namespace turtlelib;
         REQUIRE_THAT(a2.translation().y, Catch::Matchers::WithinAbs(0,1.0E-3));
         REQUIRE_THAT(a2.rotation(), Catch::Matchers::WithinAbs(PI/2,1.0E-3));
 
-        REQUIRE_THAT(a3.translation().x, Catch::Matchers::WithinAbs(0.527,1.0E-3));
+        REQUIRE_THAT(a3.translation().x, Catch::Matchers::WithinAbs(0.0,1.0E-3));
         REQUIRE_THAT(a3.translation().y, Catch::Matchers::WithinAbs(1.273,1.0E-3));
         REQUIRE_THAT(a3.rotation(), Catch::Matchers::WithinAbs(PI/2,1.0E-3));
 

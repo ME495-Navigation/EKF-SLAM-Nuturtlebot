@@ -24,7 +24,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(turtlelib REQUIRED)
 find_package(nav_msgs REQUIRED)
 
-rosidl_generate_interfaces(${PROJECT_NAME}_srv 
+rosidl_generate_interfaces(${PROJECT_NAME}_srv
   "srv/InitialPose.srv"
   "srv/Control.srv"
   LIBRARY_NAME ${PROJECT_NAME}

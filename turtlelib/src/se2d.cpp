@@ -18,6 +18,8 @@ namespace turtlelib
         {
             is.get();
             is >> tw.omega >> tw.x >> tw.y;
+            // eat the ']'
+            is.get();
         }
         else
         {
@@ -27,25 +29,13 @@ namespace turtlelib
     }
 
     // create an identity transformation
-    Transform2D::Transform2D(){
-        x = 0.0;
-        y = 0.0;
-        w = 0.0;
-    }
+    Transform2D::Transform2D() : x(0.0), y(0.0), w(0.0){}
     
     // create a transformation that is pure translation
-    Transform2D::Transform2D(Vector2D trans){
-        x = trans.x;
-        y = trans.y;
-        w = 0.0;
-    }
+    Transform2D::Transform2D(Vector2D trans) : x(trans.x), y(trans.y), w(0.0){}
 
     // transformation with pure rotation
-    Transform2D::Transform2D(double radians){
-        w = radians;
-        x = 0.0;
-        y = 0.0;
-    }
+    Transform2D::Transform2D(double radians) : w(radians), x(0.0), y(0.0){}
 
     // transformation with translation and rotation
     Transform2D::Transform2D(Vector2D trans, double radians){
@@ -56,27 +46,17 @@ namespace turtlelib
 
     // apply transformation to a 2D point
     Point2D Transform2D::operator()(Point2D p) const{
-        Point2D newP;
-        newP.x = ((p.x*std::cos(w))-(p.y*std::sin(w))) + x;
-        newP.y = ((p.x*std::sin(w))+(p.y*std::cos(w))) + y;
-        return newP;
+        return {((p.x*std::cos(w))-(p.y*std::sin(w))) + x, ((p.x*std::sin(w))+(p.y*std::cos(w))) + y};
     }
 
     // apply transformation to 2D vector
     Vector2D Transform2D::operator()(Vector2D v) const{
-        Vector2D newV;
-        newV.x = (v.x*std::cos(w)) - (v.y*std::sin(w));
-        newV.y = (v.x*std::sin(w)) + (v.y*std::cos(w));
-        return newV;
+        return {(v.x*std::cos(w)) - (v.y*std::sin(w)), (v.x*std::sin(w)) + (v.y*std::cos(w))};
     }
 
     // apply transformation to 2D Twist
     Twist2D Transform2D::operator()(Twist2D v) const{
-        Twist2D tw;
-        tw.omega = v.omega;
-        tw.x = (v.x*cos(w))-(v.y*sin(w))+(v.omega*y);
-        tw.y = (v.x*sin(w))+(v.y*cos(w))-(v.omega*x);
-        return Twist2D{tw.omega,tw.x,tw.y};
+        return {v.omega, (v.x*cos(w))-(v.y*sin(w))+(v.omega*y), (v.x*sin(w))+(v.y*cos(w))-(v.omega*x)};
     }
     
     // invert the transformation
@@ -108,7 +88,7 @@ namespace turtlelib
         t.x = x;
         t.y = y;
         
-        return t;
+        return {t.x, t.y};
     }
 
     // return angular displacement (w) of transfrom
@@ -118,7 +98,7 @@ namespace turtlelib
 
     // print out transform like deg:_, x:_, y:_
     std::ostream & operator<<(std::ostream & os, const Transform2D & tf){
-        double deg = rad2deg(tf.w);
+        const auto deg = rad2deg(tf.w);
         os << "deg: " << deg << " x: " << tf.x << " y: " << tf.y;
         return os;
     }
@@ -126,7 +106,9 @@ namespace turtlelib
     // read a transform from stdin
     std::istream & operator>>(std::istream & is, Transform2D & tf){
         // define new variables
-        double deg, x, y;
+        double deg = 0.0;
+        double x = 0.0;
+        double y = 0.0;
         is >> deg >> x >> y;
         tf = Transform2D{Vector2D{x,y}, deg2rad(deg)};
         return is;
@@ -139,7 +121,7 @@ namespace turtlelib
         return lhs;
     }
 
-    // TODO:
+    // multiply a transform and a twist and return result
     Transform2D integrate_twist(Twist2D t){
         if(almost_equal(t.omega, 0.0)){
             Vector2D v;

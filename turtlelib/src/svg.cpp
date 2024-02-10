@@ -5,7 +5,7 @@ namespace turtlelib
     void Svg::dPoint(Point2D a, const std::string& color)
     {
         // convert from svg coords to pixel coords 
-        double scale = 96.0;
+        constexpr double scale = 96.0;
         double x_off = 408.0;
         double y_off = 528.0;
         double x = (a.x*scale) + x_off;
@@ -19,10 +19,10 @@ namespace turtlelib
         double scale = 96.0;
         double x_off = 408.0;
         double y_off = 528.0;
-        double x1 = (head.x*scale) + x_off;
-        double y1 = (-head.y*scale) + y_off;
-        double x2 = (tail.x*scale) + x_off;
-        double y2 = (-tail.y*scale) + y_off;
+        const auto x1 = (head.x*scale) + x_off;
+        const auto y1 = (-head.y*scale) + y_off;
+        const auto x2 = (tail.x*scale) + x_off;
+        const auto y2 = (-tail.y*scale) + y_off;
         svgSave << "<line x1=\"" << x1 << "\" y1=\"" << y1 <<
                               "\" x2=\"" << x2 << "\" y2=\"" << y2 <<
                               "\" stroke=\"" << color << "\" stroke-width=\"2\" "" marker-start=\"url(#Arrow1Sstart)\" />\n";

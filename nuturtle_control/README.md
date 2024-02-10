@@ -66,6 +66,10 @@ The start_robot.launch.xml takes in conditional arguments to start the robot, si
 ## Demo Video
 The following demo video was run on turtlebot3 Raphael
 
+
+https://github.com/ME495-Navigation/slam-project-ishani-narwankar/assets/42013894/3ddd2929-6ae6-47f0-885e-88e0e4ae6e96
+
+
 ## Odometry Results
 As shown by the turtlebot running into the cup at the end of the video, it is clear that the turtlebot3 experiences some drift. The following results showcase the odom error from the beginning of the video to the end.
 

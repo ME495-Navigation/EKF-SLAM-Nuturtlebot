@@ -35,7 +35,7 @@ namespace turtlelib
     Transform2D::Transform2D(Vector2D trans) : x(trans.x), y(trans.y), w(0.0){}
 
     // transformation with pure rotation
-    Transform2D::Transform2D(double radians) : w(radians), x(0.0), y(0.0){}
+    Transform2D::Transform2D(double radians) : x(0.0), y(0.0), w(radians){}
 
     // transformation with translation and rotation
     Transform2D::Transform2D(Vector2D trans, double radians){

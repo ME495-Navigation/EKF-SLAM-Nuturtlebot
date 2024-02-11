@@ -36,6 +36,8 @@
 
 ## Task D
 * D.1: DiffDrive class
+* D.2: DiffDrive test
+* D.3: documentation
 
 
 ## Task E

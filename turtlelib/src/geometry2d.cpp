@@ -34,18 +34,12 @@ namespace turtlelib
 
     // calculate vector that points from p1 to p2 (p2-p1)
     Vector2D operator-(const Point2D & head, const Point2D & tail){
-        Vector2D vec;
-        vec.x = tail.x - head.x;
-        vec.y = tail.y - head.y;
-        return vec;
+        return {tail.x - head.x, tail.y - head.y};
     }
 
     // add vector to point to create new point displaced by vector
     Point2D operator+(const Point2D & tail, const Vector2D & disp){
-        Point2D dispP;
-        dispP.x = tail.x + disp.x;
-        dispP.y = tail.y + disp.y;
-        return dispP;
+        return {tail.x + disp.x, tail.y + disp.y};
     }
 
     // output a vector in format [x y]
@@ -62,11 +56,8 @@ namespace turtlelib
 
     // normalize a Vector2D
     Vector2D normalize(Vector2D v){
-        Vector2D normV;
-        double m = sqrt((v.x*v.x) + (v.y*v.y));
-        normV.x = v.x/m;
-        normV.y = v.y/m;
-        return normV;
+        const auto & m = sqrt((v.x*v.x) + (v.y*v.y));
+        return {v.x/m, v.y/m};
     }
 
     // adding the same vector to itself

@@ -87,9 +87,12 @@
             <arg name="use_rviz" value="false" />
             <arg name="use_jsp" value="false" />
         </include>
-
-        
     </group>
+
+    <!-- start laser if robot = localhost -->
+    <node pkg="hls_lfcd_lds_driver" exec="hlds_laser_publisher" if="$(eval '\'$(var robot)\' == \'localhost\'')">
+        <param name="port" value="/dev/ttyUSB0" />
+    </node>
 
     <!-- publish transform between nusim/world and odom frame -->
     <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_odom" args="0 0 0 0 0 0 nusim/world odom"/>

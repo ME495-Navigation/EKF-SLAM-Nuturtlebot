@@ -50,4 +50,5 @@
 * F.1: turtlebot setup
 * F.2: cross-compilation
 * F.5: physical testing
+* F.6: laser scanner
 

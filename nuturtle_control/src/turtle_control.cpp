@@ -106,6 +106,7 @@ private:
       auto right_wheel_jointvel = (right_wheel_jointpos - joints.position.at(0)) / dt;
       auto left_wheel_jointvel = (left_wheel_jointpos - joints.position.at(1)) / dt;
       // update joint positions
+      joints.name = {"wheel_right_joint", "wheel_left_joint"};
       joints.position = {right_wheel_jointpos, left_wheel_jointpos};
       // update joint velocities
       joints.velocity = {right_wheel_jointvel, left_wheel_jointvel};

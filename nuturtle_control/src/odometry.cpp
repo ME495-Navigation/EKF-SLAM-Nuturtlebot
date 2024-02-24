@@ -69,7 +69,7 @@ private:
     // take curr q
     turtlelib::Transform2D q = diffdrive.get_q();
     // get time now
-    odom_f.header.stamp = this->now();
+    odom_f.header.stamp = get_clock()->now();
     // set q.x and q.y
     odom_f.pose.pose.position.x = q.translation().x;
 
@@ -90,7 +90,7 @@ private:
     // update transform stamped
     geometry_msgs::msg::TransformStamped tf;
     // take time now with transform
-    tf.header.stamp = this->now();
+    tf.header.stamp = get_clock()->now();
     // set frame id
     tf.header.frame_id = odom_id;
     // set child frame id
@@ -104,6 +104,25 @@ private:
     tf.transform.rotation.y = Q.y();
     tf.transform.rotation.z = Q.z();
     tf.transform.rotation.w = Q.w();
+
+    // create pose stamped for path
+    geometry_msgs::msg::PoseStamped pose;
+    pose.header.stamp = get_clock()->now();
+    pose.header.frame_id = odom_id;
+    pose.pose.position.x = q.translation().x;
+    pose.pose.position.y = q.translation().y;
+    
+    pose.pose.orientation.x = Q.x();
+    pose.pose.orientation.y = Q.y();
+    pose.pose.orientation.z = Q.z();
+    pose.pose.orientation.w = Q.w();
+
+    // create path
+    path.header.stamp = get_clock()->now();
+    path.header.frame_id = odom_id;
+    path.poses.push_back(pose);
+    // publish path
+    path_pub_->publish(path);
 
     // publish odom and tf
     odom_pub->publish(odom_f);
@@ -124,9 +143,11 @@ private:
   turtlelib::DiffDrive diffdrive{wheel_radius, track_width};
   turtlelib::WheelAng wheel_pos_last;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr jointstate_sub;
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
   nav_msgs::msg::Odometry odom_f;
+  nav_msgs::msg::Path path;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
 
 public:
@@ -173,6 +194,9 @@ public:
 
     // publisher
     odom_pub = create_publisher<nav_msgs::msg::Odometry>("odom", 10);
+
+    // path publisher
+    path_pub_ = create_publisher<nav_msgs::msg::Path>("path_blue", 10);
 
     // subscriber
     jointstate_sub = create_subscription<sensor_msgs::msg::JointState>(

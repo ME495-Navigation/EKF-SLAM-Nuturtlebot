@@ -39,7 +39,6 @@
 * D.2: DiffDrive test
 * D.3: documentation
 
-
 ## Task E
 * E.1: turtle interface
 * E.2: odometry node
@@ -51,4 +50,7 @@
 * F.2: cross-compilation
 * F.5: physical testing
 * F.6: laser scanner
+
+## Task V
+
 

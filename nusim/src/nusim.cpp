@@ -9,6 +9,7 @@
 #include "std_srvs/srv/empty.hpp"
 #include "builtin_interfaces/msg/time.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
+#include "nav_msgs/msg/path.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
 #include "nusim/srv/teleport.hpp"
@@ -25,98 +26,6 @@ using namespace std::chrono_literals;
 
 class Nusim : public rclcpp::Node
 {
-public:
-  Nusim()
-  : Node("nusim"), timestep_(0)
-  {
-    // set parameters
-    declare_parameter("rate", 200);
-    rate_hz = get_parameter("rate").as_int();
-    std::chrono::milliseconds rate = (std::chrono::milliseconds) ((int)(1000. / rate_hz));
-
-    declare_parameter("x0", 0.0);
-    x_ = get_parameter("x0").as_double();
-
-    declare_parameter("y0", 0.0);
-    y_ = get_parameter("y0").as_double();
-
-    declare_parameter("theta0", 0.0);
-    theta_ = get_parameter("theta0").as_double();
-
-    declare_parameter("arena_x_length", 4.0);
-    arena_x_length_ = get_parameter("arena_x_length").as_double();
-
-    declare_parameter("arena_y_length", 4.0);
-    arena_y_length_ = get_parameter("arena_y_length").as_double();
-
-    declare_parameter("obstacles/x", obstacle_x_);
-    obstacle_x_ = get_parameter("obstacles/x").as_double_array();
-
-    declare_parameter("obstacles/y", obstacle_y_);
-    obstacle_y_ = get_parameter("obstacles/y").as_double_array();
-
-    declare_parameter("obstacles/r", 0.038);
-    obstacle_r_ = get_parameter("obstacles/r").as_double();
-
-    declare_parameter("motor_cmd_per_rad_sec", 0.024);
-    motor_cmd_per_rad_sec = get_parameter("motor_cmd_per_rad_sec").as_double();
-
-    declare_parameter("track_width", 0.16);
-    track_width = get_parameter("track_width").as_double();
-
-    declare_parameter("wheel_radius", 0.033);
-    wheel_radius = get_parameter("wheel_radius").as_double();
-
-    declare_parameter("encoder_ticks_per_rad", 651.8986);
-    encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
-
-    wheel_vel = {0.0, 0.0};
-    diffdrive = {wheel_radius, track_width};
-
-    // timestep publisher
-    timestep_pub_ = create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
-    // timer
-    timer_ = create_wall_timer(rate, std::bind(&Nusim::timer_callback, this));
-    // reset service
-    reset_ =
-      create_service<std_srvs::srv::Empty>(
-      "~/reset",
-      std::bind(&Nusim::reset, this, std::placeholders::_1, std::placeholders::_2));
-    // transform broadcaster
-    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-    // teleport service
-    teleport_ =
-      create_service<nusim::srv::Teleport>(
-      "~/teleport",
-      std::bind(&Nusim::teleport, this, std::placeholders::_1, std::placeholders::_2));
-    // wall publisher
-    rclcpp::QoS qos_policy = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local();
-    wall_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
-      "~/walls",
-      qos_policy);
-
-    // obstacle publisher
-    obs_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
-      "~/obstacles",
-      qos_policy);
-
-    // sensor data publisher
-    sensor_data_pub_ = this->create_publisher<nuturtlebot_msgs::msg::SensorData>(
-      "red/sensor_data",
-      10);
-
-    // wheel command subscriber
-    wheelcom_sub_ = this->create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
-      "red/wheel_cmd",
-      10,
-      std::bind(&Nusim::wheelcom_callback, this, std::placeholders::_1));
-
-    // set up simulation
-    move_robot(x_, y_, theta_);
-    create_arena();
-    show_obstacles();
-  }
-
 private:
   // main timer
   void timer_callback()
@@ -151,6 +60,25 @@ private:
     sensor_data.left_encoder = static_cast<int>(left_ang_new * encoder_ticks_per_rad);
     sensor_data.stamp = get_clock()->now();
     sensor_data_pub_->publish(sensor_data);
+
+    // adding + publishing path for obstacles + walls Task V.1
+    geometry_msgs::msg::PoseStamped pose;
+    pose.header.stamp = get_clock()->now();
+    pose.header.frame_id = "nusim/world";
+    pose.pose.position.x = diffdrive.get_q().translation().x;
+    pose.pose.position.y = diffdrive.get_q().translation().y;
+
+    pose.pose.orientation.x = q.x();
+    pose.pose.orientation.y = q.y();
+    pose.pose.orientation.z = q.z();
+    pose.pose.orientation.w = q.w();
+
+    // create message for the path
+    path.header.stamp = get_clock()->now();
+    path.header.frame_id = "nusim/world";
+    path.poses.push_back(pose);
+    // publish the path
+    path_pub_->publish(path);
 
     timestep_++;
   }
@@ -338,8 +266,108 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr wall_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obs_pub_;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheelcom_sub_;
   geometry_msgs::msg::TransformStamped tf = geometry_msgs::msg::TransformStamped();
+  nav_msgs::msg::Path path;
+
+
+public:
+  Nusim()
+  : Node("nusim"), timestep_(0)
+  {
+    // set parameters
+    declare_parameter("rate", 200);
+    rate_hz = get_parameter("rate").as_int();
+    std::chrono::milliseconds rate = (std::chrono::milliseconds) ((int)(1000. / rate_hz));
+
+    declare_parameter("x0", 0.0);
+    x_ = get_parameter("x0").as_double();
+
+    declare_parameter("y0", 0.0);
+    y_ = get_parameter("y0").as_double();
+
+    declare_parameter("theta0", 0.0);
+    theta_ = get_parameter("theta0").as_double();
+
+    declare_parameter("arena_x_length", 4.0);
+    arena_x_length_ = get_parameter("arena_x_length").as_double();
+
+    declare_parameter("arena_y_length", 4.0);
+    arena_y_length_ = get_parameter("arena_y_length").as_double();
+
+    declare_parameter("obstacles/x", obstacle_x_);
+    obstacle_x_ = get_parameter("obstacles/x").as_double_array();
+
+    declare_parameter("obstacles/y", obstacle_y_);
+    obstacle_y_ = get_parameter("obstacles/y").as_double_array();
+
+    declare_parameter("obstacles/r", 0.038);
+    obstacle_r_ = get_parameter("obstacles/r").as_double();
+
+    declare_parameter("motor_cmd_per_rad_sec", 0.024);
+    motor_cmd_per_rad_sec = get_parameter("motor_cmd_per_rad_sec").as_double();
+
+    declare_parameter("track_width", 0.16);
+    track_width = get_parameter("track_width").as_double();
+
+    declare_parameter("wheel_radius", 0.033);
+    wheel_radius = get_parameter("wheel_radius").as_double();
+
+    declare_parameter("encoder_ticks_per_rad", 651.8986);
+    encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
+
+    wheel_vel = {0.0, 0.0};
+    diffdrive = {wheel_radius, track_width};
+
+    // timestep publisher
+    timestep_pub_ = create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
+    // timer
+    timer_ = create_wall_timer(rate, std::bind(&Nusim::timer_callback, this));
+    // reset service
+    reset_ =
+      create_service<std_srvs::srv::Empty>(
+      "~/reset",
+      std::bind(&Nusim::reset, this, std::placeholders::_1, std::placeholders::_2));
+    // transform broadcaster
+    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+    // teleport service
+    teleport_ =
+      create_service<nusim::srv::Teleport>(
+      "~/teleport",
+      std::bind(&Nusim::teleport, this, std::placeholders::_1, std::placeholders::_2));
+    // wall publisher
+    rclcpp::QoS qos_policy = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local();
+    wall_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+      "~/walls",
+      qos_policy);
+
+    // obstacle publisher
+    obs_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+      "~/obstacles",
+      qos_policy);
+
+    // sensor data publisher
+    sensor_data_pub_ = this->create_publisher<nuturtlebot_msgs::msg::SensorData>(
+      "red/sensor_data",
+      10);
+
+    // path publisher
+    path_pub_ = this->create_publisher<nav_msgs::msg::Path>(
+      "red/path",
+      10);
+
+    // wheel command subscriber
+    wheelcom_sub_ = this->create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
+      "red/wheel_cmd",
+      10,
+      std::bind(&Nusim::wheelcom_callback, this, std::placeholders::_1));
+
+    // set up simulation
+    move_robot(x_, y_, theta_);
+    create_arena();
+    show_obstacles();
+  }
 
 };
 

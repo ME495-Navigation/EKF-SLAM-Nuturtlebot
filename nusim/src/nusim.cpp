@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <random>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/u_int64.hpp"
@@ -24,6 +25,14 @@
 
 using namespace std::chrono_literals;
 
+// From Jointly Gaussian Distributions Class Notes which can be found: https://nu-msr.github.io/navigation_site/lectures/gaussian.html
+std::mt19937 & get_random()
+{
+  static std::random_device rd{};
+  static std::mt19937 mt{rd()};
+  return mt;
+}
+
 class Nusim : public rclcpp::Node
 {
 private:
@@ -37,10 +46,24 @@ private:
     // update robot state
     double right_ang_new = wheel_vel.right_ang / 200.0 + diffdrive.get_phi().right_ang;
     double left_ang_new = wheel_vel.left_ang / 200.0 + diffdrive.get_phi().left_ang;
-    // double right_ang_new = wheel_vel.right_ang / 200.0;
-    // double left_ang_new = wheel_vel.left_ang / 200.0;
+    
+    double blue_right_ang_new = wheel_vel.right_ang / 200.0 + bluediffdrive.get_phi().right_ang;
+    double blue_left_ang_new = wheel_vel.left_ang / 200.0 + bluediffdrive.get_phi().left_ang;
+
+    // add slip to wheel velocities
+    double slip_r = 0.0;
+    double slip_l = 0.0;
+    if (slip_fraction != 0.0) {
+      slip_r = udist_pos(get_random());
+      slip_l = udist_pos(get_random());
+    }
+    // add slip to wheel velocities
+    right_ang_new += slip_r;
+    left_ang_new += slip_l;
 
     diffdrive.f_kin(right_ang_new, left_ang_new);
+    bluediffdrive.f_kin(blue_right_ang_new, blue_left_ang_new);
+  
     // update transform
     tf.transform.translation.x = diffdrive.get_q().translation().x;
     tf.transform.translation.y = diffdrive.get_q().translation().y;
@@ -56,8 +79,8 @@ private:
     tf_broadcaster_->sendTransform(tf);
 
     // update + publish sensor data
-    sensor_data.right_encoder = static_cast<int>(right_ang_new * encoder_ticks_per_rad);
-    sensor_data.left_encoder = static_cast<int>(left_ang_new * encoder_ticks_per_rad);
+    sensor_data.right_encoder = static_cast<int>(blue_right_ang_new * encoder_ticks_per_rad);
+    sensor_data.left_encoder = static_cast<int>(blue_left_ang_new * encoder_ticks_per_rad);
     sensor_data.stamp = get_clock()->now();
     sensor_data_pub_->publish(sensor_data);
 
@@ -231,8 +254,21 @@ private:
 
   void wheelcom_callback(const nuturtlebot_msgs::msg::WheelCommands::SharedPtr msg)
   {
+    // add input noise (v_i = u_i + w_i where u_i is the commanded wheel vel and w_i is the noise)
+    double w_l = 0.0;
+    double w_r = 0.0;
+
+    if(msg->left_velocity != 0.0 && input_noise != 0.0)
+    {
+      w_l = ndist_pos(get_random());
+    }
+    if(msg->right_velocity != 0.0 && input_noise != 0.0)
+    {
+      w_r = ndist_pos(get_random());
+    }
+
     wheel_vel =
-    {msg->left_velocity * motor_cmd_per_rad_sec, msg->right_velocity * motor_cmd_per_rad_sec};
+    {msg->left_velocity * motor_cmd_per_rad_sec + w_l, msg->right_velocity * motor_cmd_per_rad_sec + w_r};
   }
 
   // initialize variables
@@ -252,10 +288,14 @@ private:
   double track_width;
   double wheel_radius;
   double encoder_ticks_per_rad;
+  double input_noise;
+  double slip_fraction;
   turtlelib::DiffDrive diffdrive{wheel_radius, track_width};
+  turtlelib::DiffDrive bluediffdrive{wheel_radius, track_width};
   turtlelib::WheelAng wheel_vel = {0.0, 0.0};
   nuturtlebot_msgs::msg::SensorData sensor_data;
-
+  std::normal_distribution<> ndist_pos;
+  std::uniform_real_distribution<> udist_pos;
 
   std::chrono::milliseconds rate = (std::chrono::milliseconds) ((int)(1000.0 / 200.0));
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub_;
@@ -317,8 +357,19 @@ public:
     declare_parameter("encoder_ticks_per_rad", 651.8986);
     encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
 
+    declare_parameter("input_noise", 0.0);
+    input_noise = get_parameter("input_noise").as_double();
+
+    declare_parameter("slip_fraction", 0.0);
+    slip_fraction = get_parameter("slip_fraction").as_double();
+
     wheel_vel = {0.0, 0.0};
     diffdrive = {wheel_radius, track_width};
+    bluediffdrive = {wheel_radius, track_width};
+
+    // Gaussian Distribution stuff
+    ndist_pos = std::normal_distribution<double>(0.0, pow(input_noise, 0.5));
+    udist_pos = std::uniform_real_distribution<double>(-slip_fraction, slip_fraction);
 
     // timestep publisher
     timestep_pub_ = create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);

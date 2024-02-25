@@ -33,6 +33,7 @@
 * C.6: nusim launch
 * C.7: turtle drive
 * C.8: README.md
+* C.9: Robot Position
 
 ## Task D
 * D.1: DiffDrive class

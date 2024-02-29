@@ -4,13 +4,13 @@
 
 namespace turtlelib
 {
-DiffDrive::DiffDrive(double wheel_radius, double track_width)
+    DiffDrive::DiffDrive(double wheel_radius, double track_width) // initiailzier list
 {
   radius = wheel_radius;
   width = track_width;
 }
 
-DiffDrive::DiffDrive(double wheel_radius, double track_width, Transform2D s)
+    DiffDrive::DiffDrive(double wheel_radius, double track_width, Transform2D s) // initialzier list
 {
   radius = wheel_radius;
   width = track_width;
@@ -44,6 +44,7 @@ Twist2D DiffDrive::get_body_twist(const double new_left, const double new_right)
 
 Twist2D DiffDrive::f_kin(double right_ang_new, double left_ang_new)
 {
+    // Do not leave comment3ed out code in final version
   // // state deltas
   // // phi_delta, x_delta, y_delta = Modern Robotics Eqn 13.15
   // const double phi_delta = (radius/width)*(-left_ang_new + right_ang_new);
@@ -92,8 +93,8 @@ WheelAng DiffDrive::i_kin(Twist2D t)
 {
   // need to add logic for slipping wheels
   if (almost_equal(t.y, 0.0)) {
-    const double phi_right = (t.x + width * t.omega) / radius;
-    const double phi_left = (t.x - width * t.omega) / radius;
+      const double phi_right = (t.x + width * t.omega) / radius; // auto
+      const double phi_left = (t.x - width * t.omega) / radius; // auto
     return WheelAng{phi_right, phi_left};
   } else {
     throw std::logic_error("Wheels slipping because y component of twist is not zero!");

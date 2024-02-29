@@ -33,7 +33,7 @@ public:
     frequency = get_parameter("frequency").as_int();
 
     // publisher
-    cmd_vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+    cmd_vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10); // sup[erfluous this
 
     // services
     control_srv_ =

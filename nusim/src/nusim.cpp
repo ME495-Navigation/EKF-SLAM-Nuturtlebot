@@ -16,6 +16,7 @@
 ///   slip_fraction (double): The fraction of slip.
 ///   draw_only (bool): Whether to draw only.
 ///   max_range (double): The maximum range.
+///   collision_radius (double): The radius for collision detection.
 /// PUBLISHERS:
 ///   ~/timestep (std_msgs::msg::UInt64): The timestep message.
 ///   ~/walls (visualization_msgs::msg::MarkerArray): The walls message.
@@ -94,6 +95,9 @@ private:
 
     diffdrive.f_kin(right_ang_new, left_ang_new);
     bluediffdrive.f_kin(blue_right_ang_new, blue_left_ang_new);
+
+    // detect collisions
+    detect_collision();
   
     // update transform
     tf.transform.translation.x = diffdrive.get_q().translation().x;
@@ -359,8 +363,39 @@ private:
 
       // publish the fake sensor data
       fake_sensor_pub_->publish(fake_sensor_data);
-      
+    }
+  }
 
+  // detect collisions with obstacles
+  void detect_collision()
+  {
+    // get robot position
+    turtlelib::Vector2D robo_pos {diffdrive.get_q().translation().x, diffdrive.get_q().translation().y};
+    double robo_theta = diffdrive.get_q().rotation();
+
+    for (unsigned int i = 0; i < obstacle_x_.size(); i++)
+    {
+      auto curr = turtlelib::Vector2D{obstacle_x_[i], obstacle_y_[i]};
+      double dist = std::sqrt(pow((curr.x - robo_pos.x), 2) + pow((curr.y - robo_pos.y), 2));
+
+      if (dist < obstacle_r_ + collision_radius)
+      {
+        // update robot position
+        turtlelib::Vector2D new_robo_pos_obs = curr - robo_pos;
+        turtlelib::Vector2D norm_pos = turtlelib::normalize(new_robo_pos_obs);
+        // calculate move distance
+        double move_dist = obstacle_r_ + collision_radius - dist;
+        robo_pos.x -= move_dist * norm_pos.x;
+        robo_pos.y -= move_dist * norm_pos.y;
+        // update robot position
+        turtlelib::Transform2D new_robo_pos {robo_pos, robo_theta};
+        // set new position
+        diffdrive.q_new(new_robo_pos);
+
+        // exit loop
+        break;
+
+      }
     }
   }
 
@@ -385,6 +420,7 @@ private:
   double slip_fraction;
   bool draw_only;
   double max_range;
+  double collision_radius;
   turtlelib::DiffDrive diffdrive{wheel_radius, track_width};
   turtlelib::DiffDrive bluediffdrive{wheel_radius, track_width};
   turtlelib::WheelAng wheel_vel = {0.0, 0.0};
@@ -466,6 +502,8 @@ public:
     declare_parameter("max_range", 2.0);
     max_range = get_parameter("max_range").as_double();
 
+    declare_parameter("collision_radius", 0.11);
+    double collision_radius = get_parameter("collision_radius").as_double();
 
     wheel_vel = {0.0, 0.0};
     diffdrive = {wheel_radius, track_width};

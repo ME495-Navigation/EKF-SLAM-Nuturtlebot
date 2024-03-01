@@ -271,6 +271,68 @@ private:
     {msg->left_velocity * motor_cmd_per_rad_sec + w_l, msg->right_velocity * motor_cmd_per_rad_sec + w_r};
   }
 
+  // 5 Hz timer callback for publishing fake sensor data
+  void fake_sensor_callback()
+  {
+    if (draw_only == false){
+      // first create Marker Array data structure
+      visualization_msgs::msg::MarkerArray fake_sensor_data;
+      turtlelib::Vector2D rob_pos {diffdrive.get_q().translation().x, diffdrive.get_q().translation().y};
+      double rob_theta = diffdrive.get_q().rotation();
+      // need the tf
+      turtlelib::Transform2D world_to_rob {rob_pos, rob_theta};
+      // want the inverted transform
+      turtlelib::Transform2D rob_to_world = world_to_rob.inv();
+      // create a marker for the robot
+      auto marker_st = get_clock()->now();
+      for (unsigned int i = 0; i < obstacle_x_.size(); i++) {
+        // create a marker for each fake obstacle
+        turtlelib::Vector2D obs_pos = {obstacle_x_[i], obstacle_y_[i]};
+        turtlelib::Vector2D relative_obs = rob_to_world(obs_pos);
+        // fake obstacles
+        visualization_msgs::msg::Marker fake_obs;
+        fake_obs.header.frame_id = "red/base_footprint";
+        fake_obs.header.stamp = marker_st;
+        fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
+        fake_obs.id = i + 8;
+
+        auto d = pow(pow(relative_obs.x, 2) + pow(relative_obs.y, 2), 0.5);
+
+        if (d > max_range)
+        {
+          fake_obs.action = visualization_msgs::msg::Marker::DELETE;
+        }
+        else
+        {
+          fake_obs.action = visualization_msgs::msg::Marker::ADD;
+        }
+
+        // rest of the params for the obstacles
+        fake_obs.scale.x = obstacle_r_ * 2;
+        fake_obs.scale.y = obstacle_r_ * 2;
+        fake_obs.scale.z = wall_height; 
+        fake_obs.pose.position.x = relative_obs.x + ndist_pos(get_random());
+        fake_obs.pose.position.y = relative_obs.y + ndist_pos(get_random());
+        fake_obs.pose.position.z = wall_height / 2;
+        fake_obs.pose.orientation.x = 0.0;
+        fake_obs.pose.orientation.y = 0.0;
+        fake_obs.pose.orientation.z = 0.0;
+        fake_obs.pose.orientation.w = 1.0;
+        fake_obs.color.r = 1.0;
+        fake_obs.color.g = 1.0;
+        fake_obs.color.b = 0.0;
+        fake_obs.color.a = 1.0;
+        // need to add the marker to the array
+        fake_sensor_data.markers.push_back(fake_obs);
+      }
+
+      // publish the fake sensor data
+      fake_sensor_pub_->publish(fake_sensor_data);
+      
+
+    }
+  }
+
   // initialize variables
   size_t timestep_;
   double rate_hz = 0.0;
@@ -290,6 +352,8 @@ private:
   double encoder_ticks_per_rad;
   double input_noise;
   double slip_fraction;
+  bool draw_only;
+  double max_range;
   turtlelib::DiffDrive diffdrive{wheel_radius, track_width};
   turtlelib::DiffDrive bluediffdrive{wheel_radius, track_width};
   turtlelib::WheelAng wheel_vel = {0.0, 0.0};
@@ -300,6 +364,7 @@ private:
   std::chrono::milliseconds rate = (std::chrono::milliseconds) ((int)(1000.0 / 200.0));
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr fake_sensor_timer_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_;
@@ -307,6 +372,7 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obs_pub_;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_pub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr fake_sensor_pub_;
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheelcom_sub_;
   geometry_msgs::msg::TransformStamped tf = geometry_msgs::msg::TransformStamped();
   nav_msgs::msg::Path path;
@@ -363,6 +429,13 @@ public:
     declare_parameter("slip_fraction", 0.0);
     slip_fraction = get_parameter("slip_fraction").as_double();
 
+    declare_parameter("draw_only", false);
+    draw_only = get_parameter("draw_only").as_bool();
+
+    declare_parameter("max_range", 2.0);
+    max_range = get_parameter("max_range").as_double();
+
+
     wheel_vel = {0.0, 0.0};
     diffdrive = {wheel_radius, track_width};
     bluediffdrive = {wheel_radius, track_width};
@@ -375,6 +448,8 @@ public:
     timestep_pub_ = create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
     // timer
     timer_ = create_wall_timer(rate, std::bind(&Nusim::timer_callback, this));
+    // slower timer for fake sensor data
+    fake_sensor_timer_ = create_wall_timer(std::chrono::milliseconds(1000/5), std::bind(&Nusim::fake_sensor_callback, this));
     // reset service
     reset_ =
       create_service<std_srvs::srv::Empty>(
@@ -406,6 +481,11 @@ public:
     // path publisher
     path_pub_ = this->create_publisher<nav_msgs::msg::Path>(
       "red/path",
+      10);
+
+    // fake sensor publisher
+    fake_sensor_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+      "fake_sensor",
       10);
 
     // wheel command subscriber

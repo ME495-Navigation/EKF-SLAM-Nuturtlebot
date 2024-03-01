@@ -34,6 +34,7 @@
 * C.7: turtle drive
 * C.8: README.md
 * C.9: Robot Position
+* C.10: Basic Sensor
 
 ## Task D
 * D.1: DiffDrive class

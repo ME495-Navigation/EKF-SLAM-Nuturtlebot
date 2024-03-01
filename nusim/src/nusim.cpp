@@ -1,3 +1,34 @@
+/// PARAMETERS:
+///   rate (int): The rate at which the simulation runs.
+///   x0 (double): The initial x position of the robot.
+///   y0 (double): The initial y position of the robot.
+///   theta0 (double): The initial orientation of the robot.
+///   arena_x_length (double): The length of the arena in the x direction.
+///   arena_y_length (double): The length of the arena in the y direction.
+///   obstacles/x (double[]): The x positions of the obstacles.
+///   obstacles/y (double[]): The y positions of the obstacles.
+///   obstacles/r (double): The radius of the obstacles.
+///   motor_cmd_per_rad_sec (double): The maximum motor command per radian per second.
+///   track_width (double): The distance between the wheels.
+///   wheel_radius (double): The radius of the wheels.
+///   encoder_ticks_per_rad (double): The encoder ticks per radian.
+///   input_noise (double): The noise in the input.
+///   slip_fraction (double): The fraction of slip.
+///   draw_only (bool): Whether to draw only.
+///   max_range (double): The maximum range.
+/// PUBLISHERS:
+///   ~/timestep (std_msgs::msg::UInt64): The timestep message.
+///   ~/walls (visualization_msgs::msg::MarkerArray): The walls message.
+///   ~/obstacles (visualization_msgs::msg::MarkerArray): The obstacles message.
+///   ~/red/sensor_data (nuturtlebot_msgs::msg::SensorData): The sensor data message.
+///   ~/red/path (nav_msgs::msg::Path): The path message.
+///   ~/fake_sensor (visualization_msgs::msg::MarkerArray): The fake sensor message.
+/// SUBSCRIPTIONS:
+///   ~/red/wheel_cmd (nuturtlebot_msgs::msg::WheelCommands): The wheel commands message.
+/// SERVICES:
+///   ~/reset (std_srvs::srv::Empty): The reset service.
+///   ~/teleport (nusim/srv/Teleport): The teleport service.
+
 // main simulation node
 #include <chrono>
 #include <functional>

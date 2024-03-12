@@ -309,61 +309,49 @@ private:
   // 5 Hz timer callback for publishing fake sensor data
   void fake_sensor_callback()
   {
-    if (draw_only == false){
-      // first create Marker Array data structure
-      visualization_msgs::msg::MarkerArray fake_sensor_data;
-      turtlelib::Vector2D rob_pos {diffdrive.get_q().translation().x, diffdrive.get_q().translation().y};
-      double rob_theta = diffdrive.get_q().rotation();
-      // need the tf
-      turtlelib::Transform2D world_to_rob {rob_pos, rob_theta};
-      // want the inverted transform
-      turtlelib::Transform2D rob_to_world = world_to_rob.inv();
-      // create a marker for the robot
-      auto marker_st = get_clock()->now();
-      for (unsigned int i = 0; i < obstacle_x_.size(); i++) {
-        // create a marker for each fake obstacle
-        turtlelib::Vector2D obs_pos = {obstacle_x_[i], obstacle_y_[i]};
-        turtlelib::Vector2D relative_obs = rob_to_world(obs_pos);
-        // fake obstacles
+    
+    // first create Marker Array data structure
+    visualization_msgs::msg::MarkerArray fake_sensor_data;
+    turtlelib::Vector2D rob_pos {diffdrive.get_q().translation().x, diffdrive.get_q().translation().y};
+    double rob_theta = diffdrive.get_q().rotation();
+    // need the tf
+    turtlelib::Transform2D world_to_rob {rob_pos, rob_theta};
+    // want the inverted transform
+    auto rob_to_world = world_to_rob.inv();
+
+    for (size_t i = 0; i < obstacle_x_.size(); i++) {
+      // apply noise and transform obstacle position from world to robot frame
+      auto obs_pos = rob_to_world(
+        turtlelib::Point2D
+        {obstacle_x_.at(i) + ndist_pos(get_random()),
+         obstacle_y_.at(i) + ndist_pos(get_random())});
+
+        auto d = std::sqrt(std::pow(obs_pos.x, 2) + std::pow(obs_pos.y, 2));
+        
         visualization_msgs::msg::Marker fake_obs;
         fake_obs.header.frame_id = "red/base_footprint";
-        fake_obs.header.stamp = marker_st;
+        fake_obs.header.stamp = get_clock()->now();
+        fake_obs.id = i;
         fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
-        fake_obs.id = i + 8;
-
-        auto d = pow(pow(relative_obs.x, 2) + pow(relative_obs.y, 2), 0.5);
-
-        if (d > max_range)
-        {
-          fake_obs.action = visualization_msgs::msg::Marker::DELETE;
-        }
-        else
-        {
-          fake_obs.action = visualization_msgs::msg::Marker::ADD;
-        }
-
-        // rest of the params for the obstacles
         fake_obs.scale.x = obstacle_r_ * 2;
         fake_obs.scale.y = obstacle_r_ * 2;
         fake_obs.scale.z = wall_height; 
-        fake_obs.pose.position.x = relative_obs.x + ndist_pos(get_random());
-        fake_obs.pose.position.y = relative_obs.y + ndist_pos(get_random());
+        fake_obs.pose.position.x = obs_pos.x;
+        fake_obs.pose.position.y = obs_pos.y;
         fake_obs.pose.position.z = wall_height / 2;
-        fake_obs.pose.orientation.x = 0.0;
-        fake_obs.pose.orientation.y = 0.0;
-        fake_obs.pose.orientation.z = 0.0;
-        fake_obs.pose.orientation.w = 1.0;
         fake_obs.color.r = 1.0;
         fake_obs.color.g = 1.0;
         fake_obs.color.b = 0.0;
         fake_obs.color.a = 1.0;
-        // need to add the marker to the array
+
+        if (d<=max_range) {
+          fake_obs.action = visualization_msgs::msg::Marker::ADD;
+        } else {
+          fake_obs.action = visualization_msgs::msg::Marker::DELETE;
+        }
         fake_sensor_data.markers.push_back(fake_obs);
       }
-
-      // publish the fake sensor data
       fake_sensor_pub_->publish(fake_sensor_data);
-    }
   }
 
   // detect collisions with obstacles
@@ -443,6 +431,7 @@ private:
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheelcom_sub_;
   geometry_msgs::msg::TransformStamped tf = geometry_msgs::msg::TransformStamped();
   nav_msgs::msg::Path path;
+  
 
 
 public:
@@ -552,10 +541,13 @@ public:
       "red/path",
       10);
 
+    // create QoS for fake sensor pub
+    rclcpp::QoS mqos(10);
+    mqos.transient_local();
     // fake sensor publisher
     fake_sensor_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
       "fake_sensor",
-      10);
+      mqos);
 
     // wheel command subscriber
     wheelcom_sub_ = this->create_subscription<nuturtlebot_msgs::msg::WheelCommands>(

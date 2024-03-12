@@ -35,7 +35,7 @@
 * C.8: README.md
 * C.9: Robot Position
 * C.10: Basic Sensor
-* C.11: Collision Detection
+* C.11: Collision Detection 
 
 ## Task D
 * D.1: DiffDrive class

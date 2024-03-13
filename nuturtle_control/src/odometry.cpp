@@ -117,16 +117,19 @@ private:
     pose.pose.orientation.z = Q.z();
     pose.pose.orientation.w = Q.w();
 
-    // create path
-    path.header.stamp = get_clock()->now();
-    path.header.frame_id = odom_id;
-    path.poses.push_back(pose);
-    // publish path
-    path_pub_->publish(path);
+    // create path - and publish every 100 timesteps to avoid lagging
+    if (timestep_%100 == 1){
+      path.header.stamp = get_clock()->now();
+      path.header.frame_id = odom_id;
+      path.poses.push_back(pose);
+      // publish path
+      path_pub_->publish(path);
+    }
 
     // publish odom and tf
     odom_pub->publish(odom_f);
     tf_broadcaster->sendTransform(tf);
+    timestep_++;
   }
 
   // initial pose service
@@ -140,6 +143,7 @@ private:
   }
 
   // other to init
+  size_t timestep_;
   turtlelib::DiffDrive diffdrive{wheel_radius, track_width};
   turtlelib::WheelAng wheel_pos_last;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
@@ -152,7 +156,7 @@ private:
 
 public:
   Odometry()
-  : Node("odometry")
+  : Node("odometry"), timestep_(0)
   {
     // declare parameters + log error message if does not exist
     declare_parameter("rate", 200);

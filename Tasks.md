@@ -57,6 +57,10 @@
 ## Task V
 * V.1: simulation standalone
 * V.2: simulation with odometry 
-* 
+* V.4: simulated robot with SLAM
+
+## Task L
+* L.1: main SLAM results
+* L.2: SLAM in a controlled environment
 
 

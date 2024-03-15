@@ -161,11 +161,8 @@ private:
         pose.pose.orientation.y = Q_st.y();
         pose.pose.orientation.z = Q_st.z();
         pose.pose.orientation.w = Q_st.w();
-        if (timestep_%100 == 1){
-            path.poses.push_back(pose);
-            slam_path_pub_->publish(path);
-        }
-        
+        path.poses.push_back(pose);
+        slam_path_pub_->publish(path);
         auto rob_theta = xk(0);
         map_to_rob = turtlelib::Transform2D{rob_pos, rob_theta};
 
@@ -197,7 +194,6 @@ private:
     turtlelib::DiffDrive diff_drive{wheel_radius, track_width};
     
     // other to init
-    size_t timestep_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr jointstate_sub;
     rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
@@ -217,7 +213,7 @@ private:
 
 public:
     Slam()
-    : Node("slam"), timestep_(0)
+    : Node("slam")
     {
         // declare parameters
         declare_parameter("wheel_radius", wheel_radius);

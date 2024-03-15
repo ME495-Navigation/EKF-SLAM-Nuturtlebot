@@ -55,5 +55,8 @@
 * F.6: laser scanner
 
 ## Task V
+* V.1: simulation standalone
+* V.2: simulation with odometry 
+* 
 
 

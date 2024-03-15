@@ -1,4 +1,4 @@
-Worked With: [Carter DiOrio, Max Palay, Zachary Alves, Kyle Wang, Ananya Agarwal, Stella Yu]
+Worked With: [Carter DiOrio, Max Palay, Zachary Alves, Kyle Wang, Ananya Agarwal, Stella Yu, Nader Ahmed]
 
 Following unit tests were made by Kyle Wang: Multiply operator *, Obtain transform components, Inverting a transform, Transforming a twist, Initializing transform.
 

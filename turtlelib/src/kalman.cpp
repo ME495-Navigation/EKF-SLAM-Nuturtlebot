@@ -30,7 +30,7 @@ namespace turtlelib
         obstacle_detected = std::vector<bool>(N, false);
     }
 
-    arma::vec KalmanFilter::get_state_estimate() const
+    arma::vec KalmanFilter::get_state_estimate()
     {
         return xk;
     }
@@ -72,46 +72,51 @@ namespace turtlelib
         covar_predicted = A*covar*A.t() + Q_bar;
     }
 
-    void KalmanFilter::update(const Vector2D & state, int j)
+    void KalmanFilter::update(double o_x, double o_y, int j)
     {
         // calculate distance and angle to the obstacle
-        double d_obs = sqrt(pow(state.x, 2) + pow(state.y, 2));
-        double phi_obs = normalize_angle(atan2(state.y, state.x));
+        double r_j = sqrt(pow(o_x, 2) + pow(o_y, 2));
+        double phi_j = normalize_angle(atan2(o_y, o_x));
 
-        // update position of obstacle in state vector if it is detected and has not been detected before
-        if(!obstacle_detected.at(j))
-        {
-            // update obstacle as detected
-            obstacle_detected.at(j) = true;
-            // update obs position based on distance and angle
-            xk_predicted(3+2*j) = xk_predicted(1) + d_obs*cos(normalize_angle(xk_predicted(0) + phi_obs));
-            xk_predicted(3+2*j+1) = xk_predicted(2) + d_obs*sin(normalize_angle(xk_predicted(0) + phi_obs));
+        // if the landmark hasn't been observed before, update its position in the state vector
+        if (!obstacle_detected.at(j)) {
+            obstacle_detected.at(j) = true;     // mark landmark as seen
+            // innovation part: updating landmark position based on current observation
+            xk_predicted(3 + 2 * j) = xk_predicted(1) + r_j *
+            cos(normalize_angle(phi_j + xk_predicted(0)));
+            xk_predicted(3 + 2 * j + 1) = xk_predicted(2) + r_j *
+            sin(normalize_angle(phi_j + xk_predicted(0)));
         }
 
-        // calculate expected measurement based on estimated state
-        Vector2D diff = {xk_predicted(3+2*j) - xk_predicted(1), xk_predicted(3+2*j+1) - xk_predicted(2)};
-
-        double d = sqrt(pow(diff.x, 2) + pow(diff.y, 2));
+        // compute expected measurement (zbar) based on current state estimate
+        Vector2D diff = {
+            xk_predicted(3 + 2 * j) - xk_predicted(1),
+            xk_predicted(3 + 2 * j + 1) - xk_predicted(2)
+        };
+        double dist = sqrt(pow(diff.x, 2) + pow(diff.y, 2));
         double phi = normalize_angle(atan2(diff.y, diff.x) - xk_predicted(0));
-        arma::vec z_bar = {d, phi};
+        arma::vec zbar = {dist, phi};   // expected measurement vector
 
-        // calculate gain for Kalman filter
-        arma::mat R = arma::mat(2,2, arma::fill::eye) * 0.1;
-        arma::mat K = covar_predicted * H.t() * arma::inv(H * covar_predicted * H.t() + R);
+        // construct the measurement model jacobian (H matrix)
+        arma::mat H = Jacob(diff, dist, j);
 
-        // calculate del between actual and expected measurement
-        arma::vec z_del = arma::vec{d_obs, phi_obs} - z_bar;
-        z_del(1) = normalize_angle(z_del(1));
+        // compute the Kalman gain
+        arma::mat R = arma::mat(2, 2, arma::fill::eye) * 0.1;   // measurement noise
+        arma::mat K = covar_predicted * H.t() * arma::inv(H * covar_predicted * H.t() + R);   // Kalman gain calculation
 
-        // update state estimate with z_del
-        xk_predicted = xk_predicted + K*z_del;
+        // compute innovation: the difference between actual and expected measurement
+        arma::vec z_diff = arma::vec{r_j, phi_j} - zbar;
+        z_diff(1) = normalize_angle(z_diff(1));
+
+        // update state estimate with innovation
+        xk_predicted += K * z_diff;
         xk_predicted(0) = normalize_angle(xk_predicted(0));
 
         // update covariance matrix
-        arma::mat I = arma::eye<arma::mat>(2*N+3, 2*N+3);
-        covar_predicted = (I - K*H)*covar_predicted;
+        arma::mat I = arma::eye<arma::mat>(2 * N + 3, 2 * N + 3);
+        covar_predicted = (I - K * H) * covar_predicted;
 
-        // update state and covar
+        // align internal state and covariance with the updated predictions
         xk = xk_predicted;
         covar = covar_predicted;
     }
@@ -120,20 +125,17 @@ namespace turtlelib
     {
         // calculate each component of H matrix
         arma::mat h1 = {
-            {0.0, -diff.x/d, -diff.y/d},
-            {-1.0, diff.y/pow(d, 2), -diff.x/pow(d, 2)}
+            {0.0, -diff.x / d, -diff.y / d},
+            {-1.0, diff.y / pow(d, 2), -diff.x / pow(d, 2)}
         };
-
+        arma::mat zeros_before(2, 2 * j, arma::fill::zeros);
         arma::mat h2 = {
-            {diff.x/d, diff.y/d},
-            {-diff.y/pow(d, 2), diff.x/pow(d, 2)}
+            {diff.x / d, diff.y / d},
+            {-diff.y / pow(d, 2), diff.x / pow(d, 2)}
         };
+        arma::mat zeros_after(2, 2 * N - 2 * (j + 1), arma::fill::zeros);
 
-        // zeros
-        arma::mat z1(2, 2*j, arma::fill::zeros);
-        arma::mat z2(2, 2*N-2*(j+1), arma::fill::zeros);
-
-        // join components
-        return arma::join_rows(h1,z1,h2,z2); 
+        // construct and return the full H matrix
+        return arma::join_rows(h1, zeros_before, h2, zeros_after); 
     }
 }

@@ -6,6 +6,12 @@ cmake_minimum_required(VERSION 3.8)
 # find the c and c++ compilers
 project(turtlelib)
 
+find_package(Armadillo REQUIRED)
+
+include_directories(
+  ${ARMADILLO_INCLUDE_DIRS}
+)
+
 # Find your dependencies.
 # Many libraries ship with files that allow CMake to find them
 # Then general behavior is to call "find_package" but the options
@@ -52,11 +58,11 @@ endif()
 # you don't need or want to.
 # name is the name of the library without the extension or lib prefix
 # name creates a cmake "target"
-add_library(turtlelib src/geometry2d.cpp src/se2d.cpp src/svg.cpp src/diff_drive.cpp)
+add_library(turtlelib src/geometry2d.cpp src/se2d.cpp src/svg.cpp src/diff_drive.cpp src/kalman.cpp)
 
 
 add_executable(frame_main src/frame_main.cpp)
-target_link_libraries(frame_main turtlelib)
+target_link_libraries(frame_main turtlelib ${ARMADILLO_LIBRARIES})
 
 # Use target_include_directories so that #include"mylibrary/header.hpp" works
 # The use of the <BUILD_INTERFACE> and <INSTALL_INTERFACE> is because when

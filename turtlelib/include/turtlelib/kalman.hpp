@@ -37,13 +37,13 @@ namespace turtlelib
 
         /// \brief xk_predicted - the predicted state
         /// \return the predicted state
-        arma::vec get_state_estimate() const;
+        arma::vec get_state_estimate();
 
         /// \brief Pk_predicted - the predicted covariance
         void predict(Twist2D u);
 
         /// \brief update the state estimate
-        void update(const Vector2D & state, int j);
+        void update(double o_x, double o_y, int j);
         
     };
 }

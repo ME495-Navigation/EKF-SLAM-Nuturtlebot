@@ -39,12 +39,7 @@ private:
         w.right_ang = js.position.at(0) - js_msg_old.position.at(0);
         w.left_ang = js.position.at(1) - js_msg_old.position.at(1);
         
-        // update last wheel pos to current wheel pos
-        wheel_pos_last.right_ang = js.position.at(0);
-        wheel_pos_last.left_ang = js.position.at(1);
-
         // use fk to update q
-        turtlelib::Twist2D tw = diff_drive.f_kin(w.right_ang, w.left_ang);
         turtlelib::Transform2D q = diff_drive.get_q();
         
         // publish new robot config as odom msg
@@ -57,7 +52,7 @@ private:
         odom_msg.pose.pose.position.z = 0.0;
         
         tf2::Quaternion Q;
-        tf2::QUaternion Q_map;
+        tf2::Quaternion Q_map;
         Q.setRPY(0, 0, q.rotation());
         odom_msg.pose.pose.orientation.x = Q.x();
         odom_msg.pose.pose.orientation.y = Q.y();
@@ -83,7 +78,7 @@ private:
         odom_to_rob = turtlelib::Transform2D{turtlelib::Vector2D{q.translation().x, q.translation().y}, q.rotation()};
         map_to_odom = map_to_rob * odom_to_rob.inv();
 
-        geometry_msgs::TransformStamped map_odom_tf;
+        geometry_msgs::msg::TransformStamped map_odom_tf;
         map_odom_tf.header.stamp = get_clock()->now();
         map_odom_tf.header.frame_id = "map";
         map_odom_tf.child_frame_id = slam_odom_id;
@@ -115,30 +110,38 @@ private:
         std::shared_ptr<nuturtle_control::srv::InitialPose::Response>)
     {
         // set initial pose
-        turtlelib::Transform2D s = turtlelib::Transform2D{turtlelib::Vector2D{request->x, request->y}, request->theta};
+        turtlelib::Transform2D s {{request->x, request->y}, request->w};
         diff_drive.q_new(s);
-        response->msg_feedback = "Initial pose set!";
     }
 
     // fake sensor callback
     void fake_sensor_callback(const visualization_msgs::msg::MarkerArray::SharedPtr lidar_msg)
     {
         // get robot config
-        turtlelib::Transform2D q = diff_drive.get_q();
+        auto q = diff_drive.get_q();
 
         // use EKF
         // ekf prediction - take in current robot twist
+        
         turtlelib::Twist2D tw = {q.translation().x, q.translation().y, q.rotation()};
-        ekf.predict(tw);
+        
+        ekf.predict(turtlelib::Twist2D{tw.x, tw.y, tw.omega});
+        // print output of predict
+        // RCLCPP_ERROR(get_logger(), "Predicted state: %f %f %f %f %f", ekf.get_state_estimate()(0), ekf.get_state_estimate()(1), ekf.get_state_estimate()(2), ekf.get_state_estimate()(3), ekf.get_state_estimate()(4));
         // update ekf
+        // RCLCPP_ERROR(get_logger(), "FINISHED PREDICTION");
         for(size_t i = 0; i < lidar_msg->markers.size(); i++)
         {
+            // RCLCPP_ERROR(get_logger(), "ENTERED UPDATE LOOP");
             // get marker
-            visualization_msgs::msg::Marker marker = lidar_msg->markers[i]
+            visualization_msgs::msg::Marker marker = lidar_msg->markers[i];
             // get marker position
             if(marker.action == visualization_msgs::msg::Marker::ADD)
             {
+                // RCLCPP_ERROR(get_logger(), "ENTERED UPDATE LOOP 22222222222222222");
                 ekf.update(marker.pose.position.x, marker.pose.position.y, i);
+                // print output of update
+                // RCLCPP_ERROR(get_logger(), "Updated state: %f %f %f %f %f", ekf.get_state_estimate()(0), ekf.get_state_estimate()(1), ekf.get_state_estimate()(2), ekf.get_state_estimate()(3), ekf.get_state_estimate()(4));
             }
         }
 
@@ -158,8 +161,11 @@ private:
         pose.pose.orientation.y = Q_st.y();
         pose.pose.orientation.z = Q_st.z();
         pose.pose.orientation.w = Q_st.w();
-        path.poses.push_back(pose);
-        slam_path_pub_->publish(path);
+        if (timestep_%100 == 1){
+            path.poses.push_back(pose);
+            slam_path_pub_->publish(path);
+        }
+        
         auto rob_theta = xk(0);
         map_to_rob = turtlelib::Transform2D{rob_pos, rob_theta};
 
@@ -188,8 +194,10 @@ private:
     
     
 
-    turtlelib::DiffDrive diff_drive;
+    turtlelib::DiffDrive diff_drive{wheel_radius, track_width};
+    
     // other to init
+    size_t timestep_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr jointstate_sub;
     rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
@@ -209,7 +217,7 @@ private:
 
 public:
     Slam()
-    : Node("slam")
+    : Node("slam"), timestep_(0)
     {
         // declare parameters
         declare_parameter("wheel_radius", wheel_radius);

@@ -4,6 +4,7 @@
     <arg name="cmd_src" default="circle"/>
     <arg name="robot" default="nusim"/>
     <arg name="use_rviz" default="true"/>
+    <arg name="rviz_config" default="$(find-pkg-share nuturtle_control)/config/red_blue.rviz"/>
 
     <!-- cmd_src -->
     <group if="$(eval '\'$(var cmd_src)\' == \'circle\'')">
@@ -20,7 +21,7 @@
     <!-- robot = nusim -->
     <group if="$(eval '\'$(var robot)\' == \'nusim\'')">
          <!-- launch rviz with new config -->
-         <node pkg="rviz2" exec="rviz2" name="rviz" args="-d $(find-pkg-share nuturtle_control)/config/red_blue.rviz" if="$(eval '\'$(var use_rviz)\' == \'true\'')"/>
+         <node pkg="rviz2" exec="rviz2" name="rviz" args="-d $(var rviz_config)" if="$(eval '\'$(var use_rviz)\' == \'true\'')"/>
 
         <!-- launch turtle_control and odometry if robot = nusim -->
         <node pkg="nuturtle_control" exec="turtle_control" name="turtle_control">

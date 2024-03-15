@@ -1,5 +1,5 @@
 repositories:
-  nuturtlebot_msgs:
+  slam:
     type: git
-    url: git@github.com:ME495-Navigation/nuturtlebot_msgs.git
-    version: humble
+    url: git@github.com:ME495-Navigation/slam-project-ishani-narwankar.git
+    version: hw3/all

@@ -143,8 +143,49 @@ private:
         }
 
         // get state from ekf
-        
-    }
+        auto xk = ekf.get_state_estimate();
+        auto rob_pos = turtlelib::Vector2D{xk(1), xk(2)};
+        // add to slam path and publish
+        tf2::Quaternion Q_st;
+        Q_st.setRPY(0, 0, xk(0));
+        path.header.stamp = get_clock()->now();
+        path.header.frame_id = "nusim/world";
+        geometry_msgs::msg::PoseStamped pose;
+        pose.pose.position.x = rob_pos.x;
+        pose.pose.position.y = rob_pos.y;
+        pose.pose.position.z = 0.0;
+        pose.pose.orientation.x = Q_st.x();
+        pose.pose.orientation.y = Q_st.y();
+        pose.pose.orientation.z = Q_st.z();
+        pose.pose.orientation.w = Q_st.w();
+        path.poses.push_back(pose);
+        slam_path_pub_->publish(path);
+        auto rob_theta = xk(0);
+        map_to_rob = turtlelib::Transform2D{rob_pos, rob_theta};
+
+        // publish slam obstacles as marker array
+        visualization_msgs::msg::MarkerArray obs;
+        for(size_t i =0; i < lidar_msg->markers.size(); i++)
+        {
+            visualization_msgs::msg::Marker ob;
+            ob.header.stamp = get_clock()->now();
+            ob.header.frame_id = "nusim/world";
+            ob.type = visualization_msgs::msg::Marker::CYLINDER;
+            ob.id = lidar_msg->markers.at(i).id + 1000;
+            ob.pose.position.x = xk(3+2*i);
+            ob.pose.position.y = xk(4+2*i);
+            ob.pose.position.z = lidar_msg->markers.at(i).pose.position.z;
+            ob.scale.x = lidar_msg->markers.at(i).scale.x;
+            ob.scale.y = lidar_msg->markers.at(i).scale.y;
+            ob.scale.z = lidar_msg->markers.at(i).scale.z;
+            ob.color.g = 1.0;
+            ob.color.a = 1.0;
+            ob.action = visualization_msgs::msg::Marker::ADD;
+            obs.markers.push_back(ob);
+        }
+        obs_pub_->publish(obs);
+    }   
+    
     
 
     turtlelib::DiffDrive diff_drive;
@@ -170,6 +211,54 @@ public:
     Slam()
     : Node("slam")
     {
+        // declare parameters
+        declare_parameter("wheel_radius", wheel_radius);
+        wheel_radius = get_parameter("wheel_radius").as_double();
+
+        declare_parameter("track_width", track_width);
+        track_width = get_parameter("track_width").as_double();
+
+        declare_parameter("slam_body_id", slam_body_id);
+        slam_body_id = get_parameter("slam_body_id").as_string();
+
+        declare_parameter("slam_odom_id", slam_odom_id);
+        slam_odom_id = get_parameter("slam_odom_id").as_string();
+
+        declare_parameter("wheel_left", wheel_left);
+        wheel_left = get_parameter("wheel_left").as_string();
+
+        declare_parameter("wheel_right", wheel_right);
+        wheel_right = get_parameter("wheel_right").as_string();
+
+        // check params
+        check_params();
+
+        // init diff drive
+        diff_drive = {wheel_radius, track_width};
+        
+        // init publishers and subscribers
+        odom_pub = create_publisher<nav_msgs::msg::Odometry>("odom", 10);
+        jointstate_sub = create_subscription<sensor_msgs::msg::JointState>(
+            "joint_states", 10, std::bind(
+                &Slam::jointstate_callback, this, std::placeholders::_1));
+
+        initial_pose_srv_ = create_service<nuturtle_control::srv::InitialPose>(
+            "initial_pose", std::bind(
+                &Slam::initial_pose, this, std::placeholders::_1, std::placeholders::_2));
+        
+        fake_sensor_sub = create_subscription<visualization_msgs::msg::MarkerArray>(
+            "fake_sensor", 10, std::bind(
+                &Slam::fake_sensor_callback, this, std::placeholders::_1));
+        
+        obs_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("obs_map", 10);
+
+        slam_path_pub_ = create_publisher<nav_msgs::msg::Path>("path_green", 10);
+
+        tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
+        tf_map_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
+        js_msg_old.position = {0.0, 0.0};
        
     }
 

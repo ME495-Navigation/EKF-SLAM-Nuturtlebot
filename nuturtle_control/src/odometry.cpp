@@ -111,14 +111,14 @@ private:
     pose.header.frame_id = odom_id;
     pose.pose.position.x = q.translation().x;
     pose.pose.position.y = q.translation().y;
-    
+
     pose.pose.orientation.x = Q.x();
     pose.pose.orientation.y = Q.y();
     pose.pose.orientation.z = Q.z();
     pose.pose.orientation.w = Q.w();
 
     // create path - and publish every 100 timesteps to avoid lagging
-    if (timestep_%100 == 1){
+    if (timestep_ % 100 == 1) {
       path.header.stamp = get_clock()->now();
       path.header.frame_id = odom_id;
       path.poses.push_back(pose);

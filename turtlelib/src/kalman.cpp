@@ -35,6 +35,7 @@ namespace turtlelib
         return xk;
     }
 
+    // Citation: got help from Nader Ahmed for this function because my implementation kept failing -- will reimplement this myself soon
     void KalmanFilter::predict(Twist2D u)
     {
         // calculate del twist

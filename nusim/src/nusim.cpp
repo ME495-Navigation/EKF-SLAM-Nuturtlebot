@@ -78,7 +78,7 @@ private:
     // update robot state
     double right_ang_new = wheel_vel.right_ang / 200.0 + diffdrive.get_phi().right_ang;
     double left_ang_new = wheel_vel.left_ang / 200.0 + diffdrive.get_phi().left_ang;
-    
+
     double blue_right_ang_new = wheel_vel.right_ang / 200.0 + bluediffdrive.get_phi().right_ang;
     double blue_left_ang_new = wheel_vel.left_ang / 200.0 + bluediffdrive.get_phi().left_ang;
 
@@ -98,7 +98,7 @@ private:
 
     // detect collisions
     detect_collision();
-  
+
     // update transform
     tf.transform.translation.x = diffdrive.get_q().translation().x;
     tf.transform.translation.y = diffdrive.get_q().translation().y;
@@ -131,7 +131,7 @@ private:
     pose.pose.orientation.z = q.z();
     pose.pose.orientation.w = q.w();
 
-    if (timestep_%100 == 1){
+    if (timestep_ % 100 == 1) {
       // create message for the path - and publish every 100 timesteps to avoid lagging
       path.header.stamp = get_clock()->now();
       path.header.frame_id = "nusim/world";
@@ -295,26 +295,26 @@ private:
     double w_l = 0.0;
     double w_r = 0.0;
 
-    if(msg->left_velocity != 0.0 && input_noise != 0.0)
-    {
+    if (msg->left_velocity != 0.0 && input_noise != 0.0) {
       w_l = ndist_pos(get_random());
     }
-    if(msg->right_velocity != 0.0 && input_noise != 0.0)
-    {
+    if (msg->right_velocity != 0.0 && input_noise != 0.0) {
       w_r = ndist_pos(get_random());
     }
 
     wheel_vel =
-    {msg->left_velocity * motor_cmd_per_rad_sec + w_l, msg->right_velocity * motor_cmd_per_rad_sec + w_r};
+    {msg->left_velocity * motor_cmd_per_rad_sec + w_l,
+      msg->right_velocity * motor_cmd_per_rad_sec + w_r};
   }
 
   // 5 Hz timer callback for publishing fake sensor data
   void fake_sensor_callback()
   {
-    
+
     // first create Marker Array data structure
     visualization_msgs::msg::MarkerArray fake_sensor_data;
-    turtlelib::Vector2D rob_pos {diffdrive.get_q().translation().x, diffdrive.get_q().translation().y};
+    turtlelib::Vector2D rob_pos {diffdrive.get_q().translation().x,
+      diffdrive.get_q().translation().y};
     double rob_theta = diffdrive.get_q().rotation();
     // need the tf
     turtlelib::Transform2D world_to_rob {rob_pos, rob_theta};
@@ -326,34 +326,34 @@ private:
       auto obs_pos = rob_to_world(
         turtlelib::Point2D
         {obstacle_x_.at(i) + ndist_pos(get_random()),
-         obstacle_y_.at(i) + ndist_pos(get_random())});
+          obstacle_y_.at(i) + ndist_pos(get_random())});
 
-        auto d = std::sqrt(std::pow(obs_pos.x, 2) + std::pow(obs_pos.y, 2));
-        
-        visualization_msgs::msg::Marker fake_obs;
-        fake_obs.header.frame_id = "red/base_footprint";
-        fake_obs.header.stamp = get_clock()->now();
-        fake_obs.id = i;
-        fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
-        fake_obs.scale.x = obstacle_r_ * 2;
-        fake_obs.scale.y = obstacle_r_ * 2;
-        fake_obs.scale.z = wall_height; 
-        fake_obs.pose.position.x = obs_pos.x;
-        fake_obs.pose.position.y = obs_pos.y;
-        fake_obs.pose.position.z = wall_height / 2;
-        fake_obs.color.r = 1.0;
-        fake_obs.color.g = 1.0;
-        fake_obs.color.b = 0.0;
-        fake_obs.color.a = 1.0;
+      auto d = std::sqrt(std::pow(obs_pos.x, 2) + std::pow(obs_pos.y, 2));
 
-        if (d<=max_range) {
-          fake_obs.action = visualization_msgs::msg::Marker::ADD;
-        } else {
-          fake_obs.action = visualization_msgs::msg::Marker::DELETE;
-        }
-        fake_sensor_data.markers.push_back(fake_obs);
+      visualization_msgs::msg::Marker fake_obs;
+      fake_obs.header.frame_id = "red/base_footprint";
+      fake_obs.header.stamp = get_clock()->now();
+      fake_obs.id = i;
+      fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
+      fake_obs.scale.x = obstacle_r_ * 2;
+      fake_obs.scale.y = obstacle_r_ * 2;
+      fake_obs.scale.z = wall_height;
+      fake_obs.pose.position.x = obs_pos.x;
+      fake_obs.pose.position.y = obs_pos.y;
+      fake_obs.pose.position.z = wall_height / 2;
+      fake_obs.color.r = 1.0;
+      fake_obs.color.g = 1.0;
+      fake_obs.color.b = 0.0;
+      fake_obs.color.a = 1.0;
+
+      if (d <= max_range) {
+        fake_obs.action = visualization_msgs::msg::Marker::ADD;
+      } else {
+        fake_obs.action = visualization_msgs::msg::Marker::DELETE;
       }
-      fake_sensor_pub_->publish(fake_sensor_data);
+      fake_sensor_data.markers.push_back(fake_obs);
+    }
+    fake_sensor_pub_->publish(fake_sensor_data);
   }
 
   // detect collisions with obstacles
@@ -362,17 +362,20 @@ private:
     double dist = 0.0;
     double move_dist = 0.0;
 
-    turtlelib::Vector2D robo_pos {diffdrive.get_q().translation().x, diffdrive.get_q().translation().y};
+    turtlelib::Vector2D robo_pos {diffdrive.get_q().translation().x,
+      diffdrive.get_q().translation().y};
     double robo_theta = diffdrive.get_q().rotation();
 
-    for (unsigned int i = 0; i < obstacle_x_.size(); i++)
-    {
+    for (unsigned int i = 0; i < obstacle_x_.size(); i++) {
       auto curr = turtlelib::Vector2D{obstacle_x_[i], obstacle_y_[i]};
-      dist = std::sqrt(pow((curr.x - diffdrive.get_q().translation().x), 2) + pow((curr.y - diffdrive.get_q().translation().y), 2));
+      dist =
+        std::sqrt(
+        pow(
+          (curr.x - diffdrive.get_q().translation().x),
+          2) + pow((curr.y - diffdrive.get_q().translation().y), 2));
 
       move_dist = obstacle_r_ + collision_radius - dist;
-      if (move_dist > 0.0)
-      {
+      if (move_dist > 0.0) {
         // calculate vector between robot and obstacle
         auto vec{robo_pos - curr};
         // normalize vector
@@ -434,8 +437,6 @@ private:
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheelcom_sub_;
   geometry_msgs::msg::TransformStamped tf = geometry_msgs::msg::TransformStamped();
   nav_msgs::msg::Path path;
-  
-
 
 public:
   Nusim()
@@ -510,7 +511,10 @@ public:
     // timer
     timer_ = create_wall_timer(rate, std::bind(&Nusim::timer_callback, this));
     // slower timer for fake sensor data
-    fake_sensor_timer_ = create_wall_timer(std::chrono::milliseconds(1000/5), std::bind(&Nusim::fake_sensor_callback, this));
+    fake_sensor_timer_ =
+      create_wall_timer(
+      std::chrono::milliseconds(1000 / 5),
+      std::bind(&Nusim::fake_sensor_callback, this));
     // reset service
     reset_ =
       create_service<std_srvs::srv::Empty>(

@@ -51,7 +51,7 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY 
+install(DIRECTORY
   launch
   config
   DESTINATION share/nuslam/
